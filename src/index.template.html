@@ -52,8 +52,9 @@ __CSS__
       <summary class="panel-h">Analysis period</summary>
       <div class="panel-b">
         <div class="row2">
-          <div class="field"><label for="start">Start (UTC)</label><input id="start" type="date"></div>
-          <div class="field"><label for="span">Timeline length</label><select id="span"><option value="3">3 days</option><option value="14">14 days</option><option value="30" selected>30 days</option><option value="60">60 days</option><option value="120">120 days</option></select></div>
+          <div class="field" style="grid-column:1/-1"><label for="start">Start (<span class="tzName">UTC</span>)</label><input id="start" type="datetime-local" step="60"></div>
+          <div class="field"><label for="span">Timeline length</label><select id="span"><option value="3">3 days</option><option value="14">14 days</option><option value="30" selected>30 days</option><option value="60">60 days</option><option value="120">120 days</option><option value="custom">Custom&hellip;</option></select></div>
+          <div class="field" id="spanCWrap" hidden><label for="spanC">Days (1 to 365)</label><input id="spanC" type="number" min="1" max="365" step="1" value="45"></div>
         </div>
         <div class="field"><label for="horizon">Statistics cover, from the current time</label>
           <select id="horizon"><option value="7">7 days</option><option value="14">14 days</option><option value="30" selected>30 days</option></select></div>
@@ -70,8 +71,11 @@ __CSS__
           <div class="field"><label for="sunMin">Sun elevation, min (&deg;)</label><input id="sunMin" type="number" step="0.5" min="-10" max="90" placeholder="none"></div>
           <div class="field"><label for="linkMin">Earth above skyline (&deg;)</label><input id="linkMin" type="number" step="0.5" min="0" max="60" value="0"></div>
         </div>
-        <div class="field"><label for="hobs">Antenna / array height above ground</label>
-          <select id="hobs"><option value="2" selected>2 m</option><option value="10">10 m</option></select></div>
+        <div class="row2">
+          <div class="field"><label for="hobs">Antenna / array height above ground</label>
+            <select id="hobs"><option value="0">0 m (on the ground)</option><option value="2" selected>2 m</option><option value="5">5 m</option><option value="10">10 m</option><option value="20">20 m</option><option value="50">50 m</option><option value="100">100 m</option></select></div>
+        </div>
+        <p class="hint" id="hobsNote">Each height has its own LOLA skyline, computed exactly, not interpolated. Points added from the Site finder have a 2 m skyline only; the page says when it falls back to another height.</p>
         <p class="hint">A moment meets the constraints when the Sun counts and there is a link to Earth, direct or through a relay satellite.</p>
       </div>
     </details>
@@ -116,14 +120,35 @@ __CSS__
         <details class="sub" id="gsAdd"><summary>Add a ground station</summary>
           <form id="gsForm" class="comform">
             <div class="field wide"><label for="gsName">Name</label><input id="gsName" type="text" maxlength="60" placeholder="e.g. 13 m dish"></div>
-            <div class="field"><label for="gsLat">Latitude (&deg;N)</label><input id="gsLat" type="number" step="any" min="-90" max="90" required></div>
+            <div class="field"><label for="gsLat">Geodetic latitude (&deg;N)</label><input id="gsLat" type="number" step="any" min="-90" max="90" required></div>
             <div class="field"><label for="gsLon">Longitude (&deg;E)</label><input id="gsLon" type="number" step="any" min="-180" max="360" required></div>
-            <div class="field"><label for="gsH">Height (m)</label><input id="gsH" type="number" step="any" value="0"></div>
+            <div class="field"><label for="gsH" title="Geodetic height above the WGS 84 ellipsoid, as in DSN 810-005. Mean sea level (the geoid) differs from it by up to about 100 m, which moves the Moon's elevation by less than 0.0001 degrees.">Height above WGS 84 ellipsoid (m)</label><input id="gsH" type="number" step="any" value="0"></div>
             <div class="field"><label for="gsEl">Elevation limit (&deg;)</label><input id="gsEl" type="number" step="0.5" min="-5" max="90" required></div>
             <button type="submit" class="wide">Add station</button>
           </form>
         </details>
-        <p class="hint">DSN 70 m antennas and their 10.0&deg; transmit limit: DSN 810-005, Module 301. Station visibility is sampled every 30 min.</p>
+        <p class="hint">DSN 70 m antennas and their 10.0&deg; transmit limit: DSN 810-005, Module 301. Positions are geodetic WGS 84; heights are above the WGS 84 ellipsoid (Table 5 of that module), not above mean sea level. Station visibility is sampled every 30 min. <span id="gsLearn"></span></p>
+      </div>
+    </details>
+
+    <details class="panel" id="pEarth">
+      <summary class="panel-h">Observer on Earth</summary>
+      <div class="panel-b">
+        <p class="hint">Used by the <b>From Earth</b> view and for local time.</p>
+        <div class="eloc" id="eLoc"></div>
+        <form id="eSearch" class="btnrow"><input id="eQuery" type="text" maxlength="80" placeholder="City or postal code" aria-label="City or postal code" style="flex:1;width:auto"><button type="submit">Find</button></form>
+        <div id="eResults" class="comlist"></div>
+        <div class="btnrow"><button id="eMine" type="button">Use my location</button><button id="eDss" type="button">Back to DSS-14</button></div>
+        <details class="sub"><summary>Enter coordinates</summary>
+          <form id="eManual" class="comform">
+            <div class="field"><label for="eLat">Geodetic latitude (&deg;N)</label><input id="eLat" type="number" step="any" min="-90" max="90" required></div>
+            <div class="field"><label for="eLon">Longitude (&deg;E)</label><input id="eLon" type="number" step="any" min="-180" max="360" required></div>
+            <div class="field wide"><label for="eTz">Time zone (IANA name, e.g. Europe/Madrid)</label><input id="eTz" type="text" maxlength="60"></div>
+            <button type="submit" class="wide">Use these coordinates</button>
+          </form>
+        </details>
+        <p class="hint" id="eMsg" aria-live="polite"></p>
+        <p class="hint">Place search by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a> (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>); location data based on <a href="https://www.geonames.org" target="_blank" rel="noopener">GeoNames</a>. Only the text you type is sent, and only when you press Find. "Use my location" stays in this browser.</p>
       </div>
     </details>
   </div>
@@ -136,6 +161,7 @@ __CSS__
           <button type="button" role="tab" id="modeSky" aria-selected="true">Sky view</button>
           <button type="button" role="tab" id="modePolar" aria-selected="false">Sky plot</button>
           <button type="button" role="tab" id="mode3d" aria-selected="false">Terrain 3D</button>
+          <button type="button" role="tab" id="modeEarth" aria-selected="false" title="The Moon and the landing site as seen from a place on Earth">From Earth</button>
         </div>
         <span class="sp"></span>
         <span class="btnrow" id="lookGrp"><label>Look at</label><span class="seg" id="look" role="group" aria-label="Look at"></span>
@@ -144,14 +170,18 @@ __CSS__
         <span class="btnrow" id="polGrp" hidden><label>Scale</label><span class="seg" id="polZoom" role="group" aria-label="Scale"><button type="button" data-z="band" aria-pressed="true">Horizon band</button><button type="button" data-z="full" aria-pressed="false">Whole sky</button></span></span>
         <span class="btnrow" id="t3Grp" hidden><label>Surface</label><span class="seg" id="t3Surf" role="group" aria-label="Surface"><button type="button" data-surf="sun" aria-pressed="true">Sunlight now</button><button type="button" data-surf="img" aria-pressed="false">LROC image</button></span>
           <span class="seg"><button id="t3ZoomOut" type="button" aria-label="Zoom out">&minus;</button><button id="t3ZoomIn" type="button" aria-label="Zoom in">+</button></span></span>
+        <span class="btnrow" id="feGrp" hidden><label>Look at</label><span class="seg" id="feLook" role="group" aria-label="Look at"><button type="button" data-fe="moon" aria-pressed="true" title="Keep the Moon in view as time moves">Moon</button><button type="button" data-fe="moonzoom" title="Zoom in on the Moon">Moon close-up</button><button type="button" data-fe="sun" aria-pressed="false" title="Look toward the Sun">Sun</button><button type="button" data-fe="wide" title="Wide view of the horizon">Wide</button></span>
+          <span class="seg"><button id="feZoomOut" type="button" aria-label="Zoom out">&minus;</button><button id="feZoomIn" type="button" aria-label="Zoom in">+</button></span>
+          <label>From</label><button type="button" id="feLoc" title="Change the place on Earth"></button></span>
       </div>
       <div class="panel-b flush">
         <div class="hero">
           <canvas id="sky" tabindex="0" role="img" aria-label="Sky at the landing site. Drag to look around. Click, then scroll or pinch to zoom."></canvas>
           <canvas id="skyPolar" hidden role="img" aria-label="Sky plot: the skyline all the way round with the Sun, Earth and satellites"></canvas>
           <canvas id="sky3d" hidden tabindex="0" role="img" aria-label="3D LOLA terrain around the site, lit by the Sun at the current time. Drag to turn."></canvas>
+          <canvas id="skyEarth" hidden tabindex="0" role="img" aria-label="The Moon in the sky of the chosen place on Earth, with the landing site marked"></canvas>
           <span class="vstate" id="vState"></span>
-          <div class="vnote"><span id="skyNote"></span><span id="polarRead" hidden></span><span id="t3Read" hidden></span></div>
+          <div class="vnote"><span id="skyNote"></span><span id="polarRead" hidden></span><span id="t3Read" hidden></span><span id="feRead" hidden></span></div>
         </div>
         <div class="readout" id="hud" aria-live="off"></div>
       </div>
@@ -170,14 +200,16 @@ __CSS__
         <div class="tl-bar">
           <button id="play" type="button" class="primary">Play</button>
           <select id="speed" aria-label="Playback speed">
-            <option value="0.1">6 min/s</option><option value="1">1 h/s</option><option value="6" selected>6 h/s</option><option value="24">1 day/s</option><option value="96">4 days/s</option>
+            <option value="0.016666666666666666">1 min/s</option><option value="0.1">6 min/s</option><option value="1">1 h/s</option><option value="6" selected>6 h/s</option><option value="24">1 day/s</option><option value="96">4 days/s</option>
           </select>
-          <span class="seg"><button id="prevWin" type="button" title="Previous time the constraints are met">&#9664; Window</button><button id="nextWin" type="button" title="Next time the constraints are met">Window &#9654;</button></span>
+          <span class="seg"><button id="prevWin" type="button" title="Go to the start of the previous window when the constraints are met">&#9664; Window</button><button id="nextWin" type="button" title="Go to the start of the next window when the constraints are met">Window &#9654;</button></span>
+          <span class="hint" id="winMsg" aria-live="polite"></span>
           <span class="sp"></span>
-          <input id="tDate" type="date" aria-label="Go to a date (UTC)" title="Go to a date (UTC)">
-          <output id="tLabel" for="t"></output>
+          <label for="tTime" class="hint">Time</label><input id="tTime" type="datetime-local" step="60" title="Type a time and press Enter or leave the box. It follows the UTC / Local switch.">
+          <span class="seg" id="tzSeg" role="group" aria-label="Clock"><button type="button" data-tz="utc" aria-pressed="true">UTC</button><button type="button" data-tz="local" aria-pressed="false" title="Time zone of the observer on Earth (panel on the left)">Local</button></span>
         </div>
         <input id="t" class="sr" type="range" min="0" max="100" step="1" value="0" aria-label="Time">
+        <p class="hint tlkeys"><output id="tLabel" for="t"></output> &middot; Left / right arrow keys step the time by one second of play at the chosen speed; Shift steps ten.</p>
         <canvas id="strip" aria-hidden="true"></canvas>
       </div>
     </section>
@@ -209,7 +241,7 @@ __CSS__
         <button type="button" role="tab" data-atab="skyline" aria-selected="true">Skyline</button>
         <button type="button" role="tab" data-atab="slip" aria-selected="false">Landing date</button>
         <button type="button" role="tab" data-atab="maps" aria-selected="false">Maps</button>
-        <button type="button" role="tab" data-atab="unc" aria-selected="false">Terrain uncertainty</button>
+        <button type="button" role="tab" data-atab="unc" aria-selected="false">How sure is the terrain?</button>
         <button type="button" role="tab" data-atab="model" aria-selected="false">Model</button>
       </div>
     </div>
@@ -221,7 +253,7 @@ __CSS__
         <span><i class="sw ln" style="color:var(--near)"></i>Skyline set by terrain within 5 km</span>
         <span><i class="sw ln" style="color:var(--far)"></i>Skyline set by terrain farther away</span>
         <span><i class="sw ln" style="color:var(--sun)"></i>Sun, next 29.5 days</span>
-        <span><i class="sw" style="background:rgba(233,162,27,.25)"></i>Sun's range over a year</span>
+        <span><i class="sw" style="background:rgba(233,162,27,.25)"></i>Sun's range over a year <b id="yearPct"></b></span>
         <span><i class="sw ln" style="color:var(--earth)"></i>Earth, next 29.5 days</span>
       </div>
       <p class="note" id="hzNote"></p>
@@ -260,8 +292,9 @@ __CSS__
     </div>
     <div class="panel-b" data-atab="unc" hidden>
       <p class="note" id="uHead"></p>
-      <div class="tblwrap"><table class="cmp" id="uTable"></table></div>
-      <p class="note" id="vTerrUnc"></p>
+      <div class="unc-cards" id="uCards"></div>
+      <p class="note" id="uWhat"></p>
+      <details class="sub"><summary>Details for specialists</summary><div class="tblwrap"><table class="cmp" id="uTable"></table></div><p class="note" id="vTerrUnc"></p></details>
     </div>
     <div class="panel-b" data-atab="model" hidden>
       <table class="kv" id="vWhy" style="max-width:900px"></table>

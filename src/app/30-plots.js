@@ -87,7 +87,7 @@ var _dm = LWB.newDirs();
 /* LROC WAC global morphologic mosaic (data/imagery_global.json, tools/imagery/make_global.py): same simple
    cylindrical grid as this map, 180W to 180E, 90N to 90S. Display only; the night side is shaded over it. */
 var globImg = null, globReady = false;
-if (GLOBALIMG) { globImg = new Image(); globImg.onload = function () { globReady = true; if (mapsShowing()) drawMap(); }; globImg.src = 'data:image/jpeg;base64,' + GLOBALIMG.jpeg; }
+if (GLOBALIMG) { globImg = new Image(); globImg.onload = function () { globReady = true; if (mapsShowing()) drawMap(); if (S.skyMode === 'earth') kick(); }; globImg.src = 'data:image/jpeg;base64,' + GLOBALIMG.jpeg; }
 function siteState(s) { var i = stepOf(S.tMs); return s.open && s.open[i] ? 2 : (s.sunFrac && s.sunFrac[i] > 0 ? 1 : 0); }
 function drawMap() {
   var cv = $('map'), w0 = cv.clientWidth || 500, h0 = Math.round(w0 / 2);
@@ -227,14 +227,17 @@ var LUNATION_STEPS = Math.round(29.53 * PER_DAY), hzGeom = null;
 function yearBand(s) {
   var key = S.hobs + ':' + S.startMs;
   if (s.band && s.band.key === key) return s.band;
-  var nb = 72, lo = new Float32Array(nb).fill(99), hi = new Float32Array(nb).fill(-99), d = LWB.newDirs(), t = {}, mn = 99, mx = -99;
-  for (var k = 0; k < 2920; k++) {
+  var nb = 72, lo = new Float32Array(nb).fill(99), hi = new Float32Array(nb).fill(-99), d = LWB.newDirs(), t = {}, mn = 99, mx = -99, vis = 0, full = 0, NS = 2920;
+  for (var k = 0; k < NS; k++) {
     LWB.dirs(S.startMs + k * 3 * 3600000, d); LWB.topo(s.geo, d.sun, t);
     var b = Math.floor(t.az / 5) % nb;
     if (t.el < lo[b]) lo[b] = t.el; if (t.el > hi[b]) hi[b] = t.el;
     if (t.el < mn) mn = t.el; if (t.el > mx) mx = t.el;
+    // share of the year with the Sun in view against this skyline (any part / the whole disk), 3 h samples
+    var f = LWB.diskFrac(s.geo, t.az, t.el, Math.asin(LWB.R_SUN / t.range) * R2D);
+    if (f > 0) vis++; if (f >= 1) full++;
   }
-  s.band = { key: key, nb: nb, lo: lo, hi: hi, min: mn, max: mx };
+  s.band = { key: key, nb: nb, lo: lo, hi: hi, min: mn, max: mx, vis: vis / NS, full: full / NS, n: NS };
   return s.band;
 }
 function drawHorizon() {
@@ -305,6 +308,8 @@ function horizonNote() {
   var s = SITES[S.sel], g = s.geo, b = yearBand(s), i0 = stepOf(S.tMs), i1 = Math.min(S.N, i0 + LUNATION_STEPS), eLo = 99, eHi = -99;
   for (var i = i0; i < i1; i += 6) { eLo = Math.min(eLo, s.earthEl[i]); eHi = Math.max(eHi, s.earthEl[i]); }
   var t = '';
+  $('yearPct').textContent = noTerrainPolar(s) ? '' : '· Sun in view ' + pct(b.vis) + ' of the year';
+  var yr = 'Over the next 365 days (sampled every 3 h) some of the Sun is above this skyline <b>' + pct(b.vis) + '</b> of the time and the whole disk <b>' + pct(b.full) + '</b>; the rest of the year it is behind terrain or below the horizon. ';
   if (Math.abs(s.lat) > 80) {
     t = 'Near the pole the Sun never rises or sets the way it does on Earth. It circles the whole horizon once every 29.5 days, and because the Moon\'s spin axis is tilted only 1.54° to the ecliptic, its centre stays between <b>' + deg(b.min) + '</b> and <b>' + deg(b.max) + '</b> here over the next year. The Sun\'s disk is ' + (LWB.look(g, S.tMs).sunRad * 2).toFixed(2) + '° wide. ';
     if (g.mask) t += 'The skyline it has to clear runs from <b>' + deg(g.hMin) + '</b> to <b>' + deg(g.hMax) + '</b>, so a ridge a fraction of a degree high, even one 100 km away, decides between day and night. ';
@@ -316,7 +321,7 @@ function horizonNote() {
     t = 'Away from the poles the Sun crosses the sky once per lunar day of 29.5 Earth days: about two weeks of light, then two weeks of night. Earth stays almost fixed in the sky (here between <b>' + deg(eLo) + '</b> and <b>' + deg(eHi) + '</b> this month) because the Moon keeps one face toward it; the small loop is libration. ';
     t += s.terr ? 'The skyline comes from the 240 m LOLA grid, so only regional relief is included.' : 'No terrain is modelled for this site: the horizon is a smooth sphere seen from ' + S.hobs + ' m, ' + deg2(g.dip) + '.';
   }
-  $('hzNote').innerHTML = t;
+  $('hzNote').innerHTML = (noTerrainPolar(s) ? '' : yr) + t + ' ' + learn('southpole', 'The lunar south pole') + ' ' + learn('libration', 'Libration') + ' ' + learn('lola', 'LOLA terrain');
 }
 /* Sunlit share of the scored period at 2 m and at 10 m (terrain sites), cached per site, day and period. */
 function heightSensitivity(s) {

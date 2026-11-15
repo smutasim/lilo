@@ -55,6 +55,8 @@ function renderSky() {
   if (S.view !== 'site') return;
   if (S.skyMode === 'polar') { renderPolarSky(); return; }
   if (S.skyMode === '3d') { render3D(); return; }
+  if (S.skyMode === 'earth') { renderFromEarth(); return; }
+  if (S.track && !anim) trackAim();
   var sz = skySize(), W = sz[0], Hh = sz[1];
   var dpr = Math.min(window.devicePixelRatio || 1, 2);
   if (skyCv.width !== Math.round(W * dpr) || skyCv.height !== Math.round(Hh * dpr)) { skyCv.width = Math.round(W * dpr); skyCv.height = Math.round(Hh * dpr); }
@@ -67,7 +69,9 @@ function renderSky() {
   var earthE = dirAA(L0.earthAz * D2R, L0.earthEl * D2R), earthAA = { az: L0.earthAz, alt: L0.earthEl }, earthDist = L0.earthRange, earthDir = fromENU(B, earthE);
   var earthFrac = (1 + dot(f.sunGeoU, f.xr)) / 2;
   var sunUp = L0.sunFrac > 0, earthUp = L0.earthFrac > 0, lowCut = Math.min(G.hMin, 0) - 1.5, loSin = Math.sin(lowCut * D2R);
-  var dim = sunUp ? 1 - 0.58 * Math.min(1, L0.sunFrac * 2) : (earthUp ? 0.8 : 1);
+  // Lunar day: an eye or camera adapted to sunlit ground sees no stars (there is no air, the sky stays black), so
+  // the stars and the Milky Way go out as soon as any part of the Sun clears the skyline. Display only.
+  var dim = sunUp ? 0 : (earthUp ? 0.8 : 1);
 
   // 1. space
   c.fillStyle = '#020306'; c.fillRect(0, 0, W, Hh);
@@ -214,8 +218,10 @@ function drawGround(c, C, B, site, sunE, sunAlt, earthUp, earthFrac, sunFrac) {
   var a = [pA[0] - ux * L, pA[1] - uy * L], b = [pB[0] + ux * L, pB[1] + uy * L];
   // light level
   var Lg;
-  if (sunAlt > 0) Lg = (0.36 + 0.56 * Math.min(1, Math.sin(sunAlt * D2R) / Math.sin(30 * D2R))) * (0.3 + 0.7 * sunFrac);
-  else Lg = 0.014 + (earthUp ? 0.07 * earthFrac : 0);
+  // Sunlit ground is drawn bright and night ground nearly black, so the step at sunrise is as stark as it is on the
+  // Moon (no air to scatter light into the shadows). Display only.
+  if (sunAlt > 0) Lg = (0.72 + 0.5 * Math.min(1, Math.sin(sunAlt * D2R) / Math.sin(20 * D2R))) * (0.45 + 0.55 * sunFrac);
+  else Lg = 0.008 + (earthUp ? 0.05 * earthFrac : 0);
   var base = [184 * Lg, 178 * Lg, 168 * Lg];
   if (sunAlt <= 0 && earthUp) base = [base[0] * 0.85, base[1] * 0.93, base[2] * 1.12];
   // opposition brightening across the screen
@@ -227,7 +233,7 @@ function drawGround(c, C, B, site, sunE, sunAlt, earthUp, earthFrac, sunFrac) {
     var v = [rx*C.r[0] + ry*C.u[0] + C.f[0], rx*C.r[1] + ry*C.u[1] + C.f[1]];
     var daz = Math.atan2(v[0], v[1]) - sunAz;
     var fac = sunAlt > 0 ? 0.72 + 0.5 * (1 - Math.cos(daz)) / 2 : 1;
-    xg.addColorStop(k / 8, 'rgb(' + Math.round(base[0] * fac) + ',' + Math.round(base[1] * fac) + ',' + Math.round(base[2] * fac) + ')');
+    xg.addColorStop(k / 8, 'rgb(' + Math.round(Math.min(255, base[0] * fac)) + ',' + Math.round(Math.min(255, base[1] * fac)) + ',' + Math.round(Math.min(255, base[2] * fac)) + ')');
   }
   // The ground is everything below the horizon profile: the LOLA mask where the site has one, else the smooth sphere.
   var G = site.geo, half = Math.min(88, cam.hfov / 2 + 14), nseg = G.mask ? 220 : 24, hp = [], k2;
@@ -322,25 +328,43 @@ function defaultView() {
   var hf = clamp(2 * Math.atan(Math.tan(Math.min(need, 80) * D2R / 2) * aspect) * R2D, 70, 105);
   cam.yaw = (t.az - (t === s ? hf * 0.18 : 0) + 360) % 360; cam.pitch = pitch; cam.hfov = hf;
 }
+/* Look at Earth, Sun or a satellite also locks the view on it: as the time moves the camera follows, until the
+   user drags the view, presses Wide or Skyline, or presses the same button again. */
+function trackTarget(k) {
+  var site = SITES[S.sel], L0 = LWB.look(site.geo, S.tMs);
+  if (k === 'earth') return { az: L0.earthAz, el: L0.earthEl };
+  if (k === 'sun') return { az: L0.sunAz, el: L0.sunEl };
+  if (k === 'sat') {
+    var best = null;
+    satsShown().forEach(function (q) { var t = satLook(site, q, S.tMs, false); if (t && (!best || (t.up && !best.up) || (t.up === best.up && t.el > best.el))) best = t; });
+    return best ? { az: best.az, el: Math.max(best.el, 2) } : null;
+  }
+  return null;
+}
+function trackAim() { var t = trackTarget(S.track); if (!t) return; cam.yaw = (t.az + 360) % 360; cam.pitch = clamp(t.el, -20, 80); }
+function setTrack(k) {
+  S.track = k || null;
+  Array.prototype.forEach.call(document.querySelectorAll('#look button'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-look') === S.track ? 'true' : 'false'); });
+}
 function renderLook() {
-  var b = '<button type="button" data-look="earth">Earth</button><button type="button" data-look="sun">Sun</button>' + (SITES[S.sel].geo.mask ? '<button type="button" data-look="horizon">Skyline</button>' : '');
-  if (satsShown().length) b += '<button type="button" data-look="sat" title="The highest satellite above the skyline, or the highest one if none is in view">Satellite</button>';
+  var b = '<button type="button" data-look="earth" title="Look at Earth and keep following it as the time moves">Earth</button><button type="button" data-look="sun" title="Look at the Sun and keep following it as the time moves">Sun</button>' + (SITES[S.sel].geo.mask ? '<button type="button" data-look="horizon">Skyline</button>' : '');
+  if (satsShown().length) b += '<button type="button" data-look="sat" title="The highest satellite above the skyline, or the highest one if none is in view; followed as the time moves">Satellite</button>';
   b += '<button type="button" data-look="wide">Wide</button>';
   $('look').innerHTML = b;
+  if (S.track === 'sat' && !satsShown().length) S.track = null;
+  setTrack(S.track);
 }
 $('look').addEventListener('click', function (e) {
   var t = e.target.closest('button'); if (!t) return;
   var k = t.getAttribute('data-look'), site = SITES[S.sel];
   var L0 = LWB.look(site.geo, S.tMs);
+  if ((k === 'earth' || k === 'sun' || k === 'sat') && S.track === k) { setTrack(null); return; }
   if (k === 'earth') lookAt(L0.earthAz, L0.earthEl, 6);
   else if (k === 'sun') lookAt(L0.sunAz, L0.sunEl, site.geo.mask ? 5 : 40);
   else if (k === 'horizon') lookAt(L0.sunAz, 2, 28);
-  else if (k === 'sat') {
-    var best = null;
-    satsShown().forEach(function (q) { var t = satLook(site, q, S.tMs, false); if (t && (!best || (t.up && !best.up) || (t.up === best.up && t.el > best.el))) best = t; });
-    if (best) lookAt(best.az, Math.max(best.el, 2), 50);
-  }
+  else if (k === 'sat') { var best = trackTarget('sat'); if (best) lookAt(best.az, best.el, 50); }
   else if (k === 'wide') { lookAt(cam.yaw, 14, 100); }
+  setTrack(k === 'earth' || k === 'sun' || k === 'sat' ? k : null);
 });
 (function () {
   var pts = {}, lastD = 0;
@@ -355,6 +379,7 @@ $('look').addEventListener('click', function (e) {
       lastD = d; kick(); return;
     }
     var p = pts[e.pointerId], dx = e.clientX - p[0], dy = e.clientY - p[1], k = cam.hfov / (skyCv.clientWidth || 600);
+    if (S.track && Math.abs(dx) + Math.abs(dy) > 0) setTrack(null);
     cam.yaw = (cam.yaw - dx * k + 360) % 360; cam.pitch = clamp(cam.pitch + dy * k, -45, 85);
     pts[e.pointerId] = [e.clientX, e.clientY]; kick();
   });
@@ -379,6 +404,7 @@ $('look').addEventListener('click', function (e) {
     else if (e.key === 'ArrowUp') cam.pitch = clamp(cam.pitch + k, -45, 85); else if (e.key === 'ArrowDown') cam.pitch = clamp(cam.pitch - k, -45, 85);
     else if (e.key === '+' || e.key === '=') cam.hfov = clamp(cam.hfov / 1.25, 1.5, 120); else if (e.key === '-') cam.hfov = clamp(cam.hfov * 1.25, 1.5, 120);
     else return;
+    if (e.key.indexOf('Arrow') === 0) setTrack(null);
     e.preventDefault(); kick();
   });
 })();

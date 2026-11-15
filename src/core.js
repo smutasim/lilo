@@ -213,13 +213,13 @@ function relayLink(s, R, i, t) {
 }
 function metricsFrom(s, S, linkMin, gate, relay) {
   var n = S.n, v = [0, 0, 0], t = {}, sum = 0, lit = 0, earth = 0, run = 0, dark = 0, sunset = -1, hStep = S.stepMs / 3600000, el0 = 0, f0 = 0;
-  var irr = new Float32Array(n), isum = 0, out = 0, outMax = 0;
+  var irr = new Float32Array(n), isum = 0, fsum = 0, out = 0, outMax = 0;
   for (var i = 0; i < n; i++) {
     v[0] = S.sun[i*3]; v[1] = S.sun[i*3+1]; v[2] = S.sun[i*3+2];
     topo(s, v, t);
     var f = diskFrac(s, t.az, t.el, Math.asin(R_SUN / t.range) * R2D);
     if (i === 0) { el0 = t.el; f0 = f; }
-    sum += f; irr[i] = f > 0 ? irradiance(f, t.range) : 0; isum += irr[i];
+    sum += f; irr[i] = f > 0 ? irradiance(f, t.range) : 0; isum += irr[i]; fsum += irradiance(1, t.range);
     if (f > 0) { lit++; run = 0; } else { run++; if (run > dark) dark = run; if (sunset < 0) sunset = i; }
     v[0] = S.earth[i*3]; v[1] = S.earth[i*3+1]; v[2] = S.earth[i*3+2];
     topo(s, v, t);
@@ -228,7 +228,7 @@ function metricsFrom(s, S, linkMin, gate, relay) {
   var w = Math.round(24 / hStep), dayMin = isum / n;
   if (n > w) { var acc = 0; dayMin = Infinity; for (i = 0; i < n; i++) { acc += irr[i]; if (i >= w) acc -= irr[i - w]; if (i >= w - 1 && acc / w < dayMin) dayMin = acc / w; } }
   return { sunAvg: sum / n, litFrac: lit / n, earthFrac: earth / n, darkMaxH: dark * hStep, sunsetH: (sunset < 0 ? n - 1 : sunset) * hStep, sunEl0: el0, sunFrac0: f0, capped: sunset < 0,
-           irrAvg: isum / n, irrDayMin: Math.max(0, dayMin), outMaxH: outMax * hStep };
+           irrAvg: isum / n, irrDayMin: Math.max(0, dayMin), outMaxH: outMax * hStep, irrFullAvg: fsum / n, periodH: n * hStep };
 }
 
 /* ================= landing precision on a grid ================= */

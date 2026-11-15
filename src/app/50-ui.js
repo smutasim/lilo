@@ -48,6 +48,12 @@ function updateNow() {
     var tag = !t ? 'No position at this time' : nx.up ? (nx.t ? 'Sets in ' + fmtSpanS(nx.t - S.tMs) : 'In view') : (nx.t ? 'Rises in ' + fmtSpanS(nx.t - S.tMs) : 'Not in view');
     h += kvH(esc(q.name) + (q.relay ? ' (relay)' : ''), tag, t && nx.up ? 'c-sat' : 'c-off');
     if (t) { h += kv('Elevation / azimuth', deg2(t.el) + ' / ' + t.az.toFixed(1) + '°'); h += kv('Range', km(t.range) + ' km'); }
+    var cd = satCadence(s, q);
+    if (cd.n) {
+      h += kv('Revisit (timeline)', cd.revisit ? 'every ' + fmtSpanS(cd.revisit) + ' avg, longest wait ' + fmtSpanS(cd.gapMax) : cd.n + ' pass');
+      if (cd.durAvg) h += kv('Pass length', fmtSpanS(cd.durAvg) + ' avg (' + fmtSpanS(cd.durMin) + ' to ' + fmtSpanS(cd.durMax) + ')');
+      h += kv('In view', pct(cd.share) + ' of the timeline, ' + cd.n + ' passes');
+    } else h += kv('Passes', 'none above the skyline in the timeline');
     var age = satAgeText(q); if (age) h += kv('Orbit state', age);
   });
   $('vNow').innerHTML = h;
@@ -71,15 +77,39 @@ function cloneEvent(C, up, edges, nomUp) {
   var r = rangeOf(ts);
   return (r[1] - r[0] < 60000 ? fmtDT(r[0]) + ' in every clone that has one (under a minute apart)' : fmtDT(r[0]) + ' to ' + fmtDT(r[1]) + ' (' + fmtSpan(r[1] - r[0]) + ' apart)') + (none ? '; none in ' + none + ' clone' + (none > 1 ? 's' : '') : '');
 }
+/* The plain-language part: how far the ground height and the skyline could be off here, and what that does to the
+   next sunrise or sunset and to the share of time in sunlight. Same clone data as the table; no new numbers. */
+function uncCards(s, u) {
+  var cards = [], what = '', c = s.terr && !s.custom && s.id && CLONES.sites[s.id], Q = c && s.clones && s.clones[maskHeight(s)], p = Q && Q.spread;
+  function card(t, big, sub) { cards.push('<div><span>' + t + '</span><b class="big">' + big + '</b><span>' + sub + '</span></div>'); }
+  if (!s.terr) what = 'There is no terrain model for this point, so the page has nothing to say about how sure it is.';
+  else if (!c) what = '<b>Not measured for this point.</b> The LOLA team publishes error models only for its 5 m maps of selected south-pole sites; ' + (s.terr.dem[0] !== '5 m' ? 'this skyline comes from the ' + esc(s.terr.dem[0]) + ' map.' : 'this point is not one of them.') + ' The page does not guess a number.';
+  else if (!p) what = c.mask[String(maskHeight(s))] ? 'Reading the error models…' : 'Error models were run for 2 m and 10 m observers only, so there is no measured spread at ' + S.hobs + ' m.';
+  else {
+    var sunW = LWB.look(s.geo, S.tMs).sunRad * 2;
+    card('Ground height', '±' + p.hSd.toFixed(1) + ' m', 'one standard deviation across ' + p.n + ' error models of the LOLA map');
+    card('Skyline edge, typical', '±' + p.rms.toFixed(2) + '°', 'averaged all the way round; the Sun is ' + sunW.toFixed(2) + '° wide, so this is ' + Math.round(p.rms / sunW * 100) + '% of its width');
+    card('Skyline edge, worst direction', '±' + p.worst.toFixed(2) + '°', 'toward ' + compass16(p.worstAz) + ' (' + Math.round(p.worstAz) + '°)');
+    if (u && u.clones && NOWC) {
+      var C = u.clones, I = NOWC.I, ts = C.sunEdge.filter(function (t) { return t !== null; });
+      if (ts.length && (C.sunUp === C.n || C.sunUp === 0)) { var r = rangeOf(ts); card(I.sunUp ? 'Next sunset could shift by' : 'Next sunrise could shift by', r[1] - r[0] < 60000 ? 'under 1 min' : fmtSpan(r[1] - r[0]), 'earliest ' + fmtDT(r[0]) + ', latest ' + fmtDT(r[1])); }
+      else if (C.sunUp !== C.n && C.sunUp !== 0) card('Is the Sun up right now?', C.sunUp + ' of ' + C.n + ' say yes', 'the Sun is grazing the skyline, so the terrain error decides it');
+      var a = rangeOf(C.lit); card('Sun in view, next ' + Math.round(NOWC.P.days) + ' days', pct(a[0]) + ' to ' + pct(a[1]), 'this model: ' + pct(NOWC.P.litFrac));
+    }
+    what = 'NASA\'s LOLA team re-drew this 5 m map ' + p.n + ' times with its known measurement and interpolation errors (Barker et al. 2021, PGDA error clones). The spread between those versions is how sure the map is. Only terrain inside the 5 m tile varies between them; the distant skyline is the same in all, so these figures are a lower bound on the true uncertainty. ' + learn('lola', 'How LOLA measures height');
+  }
+  $('uCards').innerHTML = cards.join(''); $('uWhat').innerHTML = what;
+}
 function showUncertainty(u) {
   var s = SITES[S.sel], head = $('uHead'), tb = $('uTable');
   $('vTerrUnc').textContent = terrUnc(s);
+  uncCards(s, u);
   if (!NOWC || NOWC.s !== s) { tb.innerHTML = ''; return; }
   if (!s.terr) { head.textContent = 'No terrain model here, so terrain uncertainty is not quantified.'; tb.innerHTML = ''; return; }
   var hasClones = !s.custom && s.id && CLONES.sites[s.id];
   if (!u) { head.textContent = hasClones || s.terr.grid ? 'Recomputed on the error models when the time rests…' : 'Elevation-model error is not quantified for this point: PGDA error clones (Barker et al. 2021) exist only for its 5 m site models.'; tb.innerHTML = ''; return; }
   var C = u.clones, I = NOWC.I, P = NOWC.P, rows = [];
-  head.textContent = C ? 'Each number below is recomputed on ' + C.n + ' LOLA error-clone elevation models (Barker et al. 2021). The range covers elevation-model error only and is not a confidence interval.'
+  head.textContent = C ? 'How far the LOLA terrain could be off at this site, and what that changes. (Specialist table below: each number recomputed on ' + C.n + ' error-clone elevation models; the range is elevation-model error only, not a confidence interval.)'
     : 'Elevation-model error is not quantified for this point (no clone DEMs).' + (u.near ? ' The row below shows how much the answer moves with landing position instead.' : '');
   if (C) {
     rows.push([I.sunUp ? NOWC.setW : NOWC.riseW, I.sunNext ? fmtDT(I.sunNext.t) : 'none in range', cloneEvent(C, C.sunUp, C.sunEdge, I.sunUp)]);
@@ -106,6 +136,7 @@ function terrUnc(s) {
   var c = !s.custom && s.id && CLONES.sites[s.id];
   if (!c) return 'Not quantified at this point. PGDA publishes error clones only for its 5 m site models' + (s.terr.dem[0] !== '5 m' ? ', and this skyline comes from the ' + s.terr.dem[0] + ' model' : ', and this point is not one of the sites they were processed for') + '.';
   var Q = s.clones && s.clones[maskHeight(s)];
+  if (!c.mask[String(maskHeight(s))]) return 'Clone skylines exist for 2 m and 10 m observers only.';
   if (!Q || !Q.spread) return 'Reading ' + c.n + ' LOLA error clones…';
   var p = Q.spread;
   return 'Skyline scatter across ' + p.n + ' LOLA error-clone models (1σ): ' + p.rms.toFixed(3) + '° RMS over all azimuths, ' + p.worst.toFixed(2) + '° at the worst azimuth (' + Math.round(p.worstAz) + '°). Ground height ±' + p.hSd.toFixed(2) + ' m (1σ). This is near-field elevation-model error only; the far field is the same in every clone.';
@@ -115,30 +146,31 @@ function updateVerdict() {
   s.lastSum = r;
   var el = $('vState'); el.textContent = bad ? 'No terrain' : r.openNow ? 'Constraints met' : 'Constraints not met'; el.className = 'vstate' + (r.openNow && !bad ? ' on' : '');
   var cat = (CATS.filter(function (c) { return c[0] === s.cat; })[0] || ['', ''])[1];
-  $('vCoord').innerHTML = '<b>' + fmtCoord(s.lat, s.lon) + '</b>' + (s.terr ? ' · ' + Math.round(s.terr.h_m) + ' m' : '') + (cat ? ' · ' + cat : '');
+  $('vCoord').innerHTML = '<b>' + fmtCoord(s.lat, s.lon) + '</b>' + (s.terr ? ' · <span title="LOLA ground height above the 1737.4 km reference sphere (the LOLA datum), not above a mean surface">ground ' + Math.round(s.terr.h_m).toLocaleString('en-US') + ' m above the 1737.4 km sphere</span>' : '') + (cat ? ' · ' + cat : '');
   $('removeSite').hidden = !s.custom;
   var vr = $('vReason'); vr.textContent = bad ? 'No terrain model for this point: nothing is reported.' : r.text; vr.className = 'msg ' + (bad ? 'stop' : r.openNow ? 'pick' : 'warn');
   var badge = $('vBadge');
   if (bad) { badge.hidden = false; badge.className = 'msg stop'; badge.textContent = 'No terrain for this point. Near the pole the Sun and Earth sit within a few degrees of the horizon, so a smooth sphere is not usable. Pick a point within 1 km of a listed south-pole site, take a candidate from the Site finder, or run the terrain helper (python tools/terrain/serve.py) and add the point again.'; }
   else if (s.terr && s.terr.dem.length === 1) { badge.hidden = false; badge.className = 'msg warn'; badge.textContent = 'Horizon from the 240 m LOLA grid only: regional relief is included, nearby relief smaller than 240 m is not. Where the two could be compared, a 240 m horizon changed the sunlit share by up to 52 points (docs/validation.md).'; }
   else if (!s.terr && Math.abs(s.lat) >= 60) { badge.hidden = false; badge.className = 'msg warn'; badge.textContent = 'High-latitude site without a terrain mask: real terrain can block the low Sun and Earth here. Treat these numbers as approximate.'; }
+  else if (s.terr && maskHeight(s) !== S.hobs) { badge.hidden = false; badge.className = 'msg info'; badge.textContent = 'This point has no ' + S.hobs + ' m skyline, so the ' + maskHeight(s) + ' m one is used. Exact skylines at every height exist for the listed south-pole sites.'; }
   else badge.hidden = true;
   var fb = $('vFallback'); fb.hidden = !STEPS.fallback;
   if (STEPS.fallback) { var er = LWB.ephRange(); fb.textContent = 'Fallback ephemeris in use: part of this period lies outside the precomputed SPICE span (' + iso(er[0]).slice(0, 10) + ' to ' + iso(er[1]).slice(0, 10) + '). Positions come from astronomy-engine with the IAU rotation model (checked to 0.003° against Horizons instead of 0.00002°).'; }
   // windows in the statistics period
-  var wh = '<tr><th>Opens (UTC)</th><th>Closes (UTC)</th><th>Duration</th></tr>';
+  var tzl = tzLabel(S.tMs), wh = '<tr><th>Opens (' + tzl + ')</th><th>Closes (' + tzl + ')</th><th>Duration</th></tr>';
   if (bad || !r.wins.length) wh += '<tr><td colspan="3" class="mu" style="text-align:left">' + (bad ? 'Not computed.' : 'None in the next ' + S.horizonD + ' days.') + '</td></tr>';
-  else r.wins.forEach(function (w) { wh += '<tr data-t="' + Math.ceil(w.t0 / 60000) * 60000 + '" title="Go to the start of this window"><td>' + fmtDT(w.t0).replace(' UTC', '') + '</td><td>' + fmtDT(w.t1).replace(' UTC', '') + (w.cut ? ' +' : '') + '</td><td>' + fmtSpan(w.t1 - w.t0) + '</td></tr>'; });
+  else r.wins.forEach(function (w) { wh += '<tr data-t="' + Math.ceil(w.t0 / 60000) * 60000 + '" title="Go to the start of this window"><td>' + fmtDay(w.t0) + ', ' + fmtClock(w.t0) + '</td><td>' + fmtDay(w.t1) + ', ' + fmtClock(w.t1) + (w.cut ? ' +' : '') + '</td><td>' + fmtSpan(w.t1 - w.t0) + '</td></tr>'; });
   $('vWins').innerHTML = wh;
   // the model tab: what the numbers above assume
   var mh = maskHeight(s), rows = [];
   rows.push(['Constraints', limitsList().join('; ')]);
-  rows.push(['Terrain', terrLabel(s) + ', observer ' + (mh === null ? S.hobs : mh) + ' m above ' + (s.terr ? 'the ground' : 'the sphere') + (s.terr && mh !== S.hobs ? ' (no ' + S.hobs + ' m mask for this point)' : '')]);
+  rows.push(['Terrain', terrLabel(s) + ', observer ' + (mh === null ? S.hobs : mh) + ' m above ' + (s.terr ? 'the ground' : 'the sphere') + (s.terr && mh !== S.hobs ? ' (no ' + S.hobs + ' m mask for this point, so the nearest, ' + mh + ' m, is used)' : '')]);
   rows.push(['Ephemeris', STEPS.fallback ? 'astronomy-engine fallback (IAU frame)' : 'SPICE DE440, MOON_ME, apparent (LT+S)']);
   rows.push(['Sun and Earth', 'Finite disks, no atmosphere; events root-found to 1 s from 10-min samples']);
   rows.push(['Irradiance', '1361 W/m² at 1 au × (1 au / Sun distance)² × visible disk fraction, on a Sun-facing surface']);
   if (s.terr) {
-    rows.push(['Ground height', s.terr.h_m.toFixed(0) + ' m above the 1737.4 km sphere']);
+    rows.push(['Ground height', s.terr.h_m.toFixed(0) + ' m above the 1737.4 km reference sphere (LOLA datum). The observer height is added on top of this.']);
     rows.push(['Skyline', deg2(s.geo.hMin) + ' to ' + deg2(s.geo.hMax) + (s.terr.stats ? ', farthest horizon point ' + s.terr.stats.max_dist_km + ' km (at 2 m)' : '')]);
     var sl = []; if (s.terr.slope && s.terr.slope['5m'] !== undefined) sl.push(s.terr.slope['5m'].toFixed(1) + '° over 10 m'); if (s.terr.slope && s.terr.slope['20m'] !== undefined) sl.push(s.terr.slope['20m'].toFixed(1) + '° over 40 m');
     if (sl.length) rows.push(['Slope (LOLA grid, B-spline gradient)', sl.join(', ') + '. Not a lander-scale slope.']);
@@ -146,7 +178,7 @@ function updateVerdict() {
   satsShown().forEach(function (q) { rows.push(['Satellite: ' + esc(q.name), esc(satSummary(q)) + (q.relay ? '; relay, counts ' + (q.minEl ? q.minEl + '° or more' : 'anywhere') + ' above the skyline' : '; shown only')]); });
   if (satsShown().some(function (q) { return q.kind === 'num' && !q.twoBody; })) rows.push(['Orbit propagation', esc(propModelText())]);
   $('vWhy').innerHTML = rows.map(function (rw) { return '<tr><th>' + rw[0] + '</th><td style="white-space:normal;text-align:left">' + rw[1] + '</td></tr>'; }).join('');
-  if (s.terr && !s.custom && s.id && CLONES.sites[s.id] && !(s.clones && s.clones[maskHeight(s)])) loadClones(s).then(function () { var tu = $('vTerrUnc'); if (tu && SITES[S.sel] === s) tu.textContent = terrUnc(s); });
+  if (s.terr && !s.custom && s.id && CLONES.sites[s.id] && !(s.clones && s.clones[maskHeight(s)])) loadClones(s).then(function () { var tu = $('vTerrUnc'); if (tu && SITES[S.sel] === s) { tu.textContent = terrUnc(s); uncCards(s, null); } });
   $('vSrc').innerHTML = s.custom ? 'Custom site: coordinates as entered.' + (s.terr ? ' Terrain: ' + esc(terrLabel(s)) + '.' : '') :
     'Coordinates (ME frame): ' + esc(s.src) + (s.url ? ' <a href="' + esc(s.url) + '" target="_blank" rel="noopener">source</a>' : '') + (s.note ? '<br>' + esc(s.note) : '');
   $('skyNote').textContent = s.geo.mask ? 'Skyline from LOLA terrain. Drag to look around.' : 'Smooth sphere, no terrain. Drag to look around.';
@@ -158,15 +190,38 @@ $('vWins').addEventListener('click', function (e) { var tr = e.target.closest('t
 function updateTime() {
   $('t').value = Math.round((S.tMs - S.startMs) / 60000);
   $('tLabel').textContent = fmtFull(S.tMs);
-  $('clock').innerHTML = 'Scenario time <b>' + fmtFull(S.tMs) + '</b>';
-  if (document.activeElement !== $('tDate')) $('tDate').value = new Date(S.tMs).toISOString().slice(0, 10);
+  $('clock').innerHTML = 'Scenario time <b>' + fmtFull(S.tMs) + '</b>' + (S.tz === 'local' ? ' <span title="UTC">(' + iso(S.tMs).slice(11, 16) + ' UTC)</span>' : '');
+  if (document.activeElement !== $('tTime')) $('tTime').value = toZonedInput(S.tMs);
 }
-/* Go to a date: the time of day is kept; a date outside the period moves the period (gotoTime). */
-$('tDate').addEventListener('change', function () {
-  var p = this.value.split('-'); if (p.length !== 3 || !+p[0]) return;
-  var day = Date.UTC(+p[0], +p[1] - 1, +p[2]); if (!isFinite(day)) return;
+/* Type a time (UTC, or the observer's local time): a time outside the period moves the period (gotoTime). */
+function typedTime() {
+  var ms = parseZoned($('tTime').value); if (!isFinite(ms)) return;
   if (S.playing) setPlaying(false);
-  this.blur(); gotoTime(day + ((S.tMs % DAY) + DAY) % DAY);
+  if (Math.abs(ms - S.tMs) >= 60000) gotoTime(ms);
+}
+$('tTime').addEventListener('change', typedTime);
+$('tTime').addEventListener('keydown', function (e) { if (e.key === 'Enter') { typedTime(); this.blur(); } });
+/* UTC or the Earth observer's local time, for every clock time on the page (files stay in UTC). */
+function setTz(z) {
+  S.tz = z === 'local' ? 'local' : 'utc'; TZC = {};
+  try { localStorage.setItem('lwb.tz.v1', S.tz); } catch (x) {}
+  Array.prototype.forEach.call(document.querySelectorAll('#tzSeg button, #feTz button'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-tz') === S.tz ? 'true' : 'false'); });
+  Array.prototype.forEach.call(document.querySelectorAll('.tzName'), function (el) { el.textContent = S.tz === 'local' ? tzLabel(S.tMs) + ', ' + tzZone() : 'UTC'; });
+  $('start').value = toZonedInput(S.startMs);
+  if (!STEPS) return;
+  limSummary(); updateTime(); refreshData(true); kick();
+  if (S.view === 'list') updateList();
+}
+document.addEventListener('click', function (e) { var b = e.target.closest('[data-tz]'); if (b && b.closest('#tzSeg, #feTz')) setTz(b.getAttribute('data-tz')); });
+/* Arrow keys step the time by one second of play at the chosen speed (Shift: ten), unless a control has focus. */
+document.addEventListener('keydown', function (e) {
+  if (S.view !== 'site' || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || e.altKey || e.ctrlKey || e.metaKey) return;
+  var a = document.activeElement, tag = a && a.tagName;
+  if (a && (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || a.id === 'sky' || a.id === 'sky3d' || a.id === 'skyEarth' || a.isContentEditable)) return;
+  e.preventDefault();
+  if (S.playing) setPlaying(false);
+  var step = Math.max(60000, Math.round(S.speed * 3600000 / 60000) * 60000) * (e.shiftKey ? 10 : 1);
+  gotoTime(S.tMs + (e.key === 'ArrowRight' ? step : -step));
 });
 /* Only what is showing is drawn: a hidden canvas has no size. Switching view or tab redraws it. */
 var lastStep = -1, lastMapDraw = 0, lastNow = 0, lastHz = 0, lastStrip = 0;
@@ -198,12 +253,12 @@ $('atabs').addEventListener('click', function (e) { var b = e.target.closest('bu
 function selectSite(idx) {
   if (idx < 0 || idx >= SITES.length) return;
   if (!SITES[idx].ready) computeSite(SITES[idx]);
-  S.sel = idx; $('siteSel').value = String(idx); defaultView(); renderLook(); refreshData(true); kick();
+  S.sel = idx; $('siteSel').value = String(idx); defaultView(); renderLook(); renderComms(); refreshData(true); kick();
 }
 /* Go to a time, moving the period's start if the time is outside it. */
 function gotoTime(ms) {
   if (ms < S.startMs || ms > S.startMs + (spanSteps() - 1) * STEP_MS) {
-    S.startMs = Math.floor(ms / DAY) * DAY; $('start').value = new Date(S.startMs).toISOString().slice(0, 10);
+    S.startMs = Math.floor(ms / DAY) * DAY; $('start').value = toZonedInput(S.startMs);
     S.tMs = ms; ensureProp(); buildSteps(); SITES.forEach(computeSite); $('t').max = (spanSteps() - 1) * STEP_MIN;
   }
   S.tMs = ms; limSummary(); updateTime(); refreshData(true); kick();
@@ -226,9 +281,9 @@ function setView(v) {
 Array.prototype.forEach.call(document.querySelectorAll('.views button'), function (b) { b.addEventListener('click', function () { setView(b.getAttribute('data-view')); }); });
 document.addEventListener('click', function (e) { var b = e.target.closest('[data-goto]'); if (b) setView(b.getAttribute('data-goto')); });
 /* The constraints live in the Site view; the finder shows them and links back. */
-$('fLimEdit').addEventListener('click', function () { setView('site'); $('pLim').open = true; $('pLim').scrollIntoView({ block: 'center' }); $('sunFrac').focus({ preventScroll: true }); });
 function limSummary() {
-  $('perSum').textContent = fmtDay(S.startMs) + ' to ' + fmtDay(S.startMs + (S.spanD - 1) * DAY) + ' ' + new Date(S.startMs + (S.spanD - 1) * DAY).getUTCFullYear() + ', UTC';
+  var pe = S.startMs + S.spanD * DAY;
+  $('perSum').textContent = fmtDT(S.startMs).replace(/ \S+$/, '') + ' to ' + fmtDT(pe).replace(/ \S+$/, '') + ' ' + new Date(shiftTz(pe)).getUTCFullYear() + ', ' + tzLabel(S.startMs) + ' (' + S.spanD + ' days)';
   $('fLim').innerHTML = limitsList().map(function (t) { return '<span class="chip">' + esc(t) + '</span>'; }).join('');
 }
 function redrawAll() {
@@ -269,12 +324,31 @@ function bindScrub(cv, geomFn) {
   cv.addEventListener('pointerup', function () { down = false; }); cv.addEventListener('pointercancel', function () { down = false; });
 }
 bindScrub($('strip'), function () { return [TL.left || TL.L, TL.pw || $('strip').clientWidth]; });
+/* Window buttons: go to the start of the next / previous window, compared at the minute the page jumps to (the
+   window's start rounded up), so going back after going forward does not land on the same window. Outside the
+   timeline the period moves (gotoTime); with no window in the computed range the bar says so. */
+var winMsgT = 0;
+function winStart(w) { return Math.ceil(w.t0 / 60000) * 60000; }
 function jump(dir) {
-  var s = SITES[S.sel], lim = S.startMs + (spanSteps() - 1) * STEP_MS, w = null;
-  if (dir > 0) w = s.wins.filter(function (x) { return x.t0 > S.tMs + 1000 && x.t0 <= lim; })[0];
-  else { var before = s.wins.filter(function (x) { return x.t0 < S.tMs - 1000; }); w = before[before.length - 1]; }
-  if (!w) return;
-  S.tMs = Math.ceil(w.t0 / 60000) * 60000; updateTime(); refreshData(true); kick();
+  var s = SITES[S.sel], w = null, msg = $('winMsg');
+  if (S.playing) setPlaying(false);
+  if (noTerrainPolar(s)) { msg.textContent = 'No terrain here, so no windows are computed.'; return; }
+  if (dir > 0) w = s.wins.filter(function (x) { return winStart(x) > S.tMs; })[0];
+  else {
+    var prevOf = function () { var before = s.wins.filter(function (x) { return winStart(x) < S.tMs; }); return before[before.length - 1]; };
+    w = prevOf();
+    // none left in the computed range: move the period back one span and look again
+    if (!w || winStart(w) < S.startMs) {
+      var keep = S.tMs; S.startMs -= S.spanD * DAY; $('start').value = toZonedInput(S.startMs);
+      ensureProp(); buildSteps(); SITES.forEach(computeSite); $('t').max = (spanSteps() - 1) * STEP_MIN; S.tMs = keep;
+      w = prevOf();
+    }
+  }
+  clearTimeout(winMsgT);
+  if (!w) { msg.textContent = dir > 0 ? 'No later window in the ' + Math.round((stepMs(S.N - 1) - S.startMs) / DAY) + ' days computed.' : 'No earlier window since the period start.'; winMsgT = setTimeout(function () { msg.textContent = ''; }, 3500); return; }
+  msg.textContent = 'Window ' + (s.wins.indexOf(w) + 1) + ' of ' + s.wins.length + ', ' + fmtSpan(w.t1 - w.t0) + (w.cut ? ' or more' : '');
+  winMsgT = setTimeout(function () { msg.textContent = ''; }, 3500);
+  gotoTime(winStart(w));
 }
 $('nextWin').addEventListener('click', function () { jump(1); });
 $('prevWin').addEventListener('click', function () { jump(-1); });
@@ -333,24 +407,28 @@ $('csvBtn').addEventListener('click', function () { deliver(toCSV(exportData()),
    v=<find|list|method>  m=<polar|3d>  p=<analysis tab>
    f=<finder landing date;surface days>  g=<six goals>  a=<area: lat from;lat to;lon from;lon to>.
    Satellites and stations are saved in the browser, not in the link. */
-var hashReady = false, FIND_IDS = { g: ['gIrr', 'gDay', 'gDark', 'gEarth', 'gOut', 'gSlope'], a: ['fLat0', 'fLat1', 'fLon0', 'fLon1'], f: ['fStart', 'fDays'] };
+var hashReady = false, FIND_IDS = { a: ['fLat0', 'fLat1', 'fLon0', 'fLon1'], f: ['fStart', 'fDays'] };
 var ATABS = ['skyline', 'slip', 'maps', 'unc', 'model'];
 function siteKey(s) { return s.id || (s.lat.toFixed(4) + ',' + s.lon.toFixed(4)); }
 function writeHash() {
   if (!hashReady) return;
-  var s = SITES[S.sel], h = 's=' + siteKey(s) + '&t=' + iso(S.tMs) + (S.hobs !== 2 ? '&h=' + S.hobs : '');
+  var s = SITES[S.sel], h = 's=' + siteKey(s) + '&t=' + iso(S.tMs) + (S.hobs !== 2 ? '&h=' + S.hobs : '') + (S.spanD !== 30 ? '&d=' + S.spanD : '');
   var l = [S.sunFracMin, S.sunMin === null ? '' : S.sunMin, '', S.linkMin, 0, S.ground ? 1 : 0].join(';');
   if (l !== '0;;;0;0;0') h += '&l=' + l;
   if (S.view !== 'site') h += '&v=' + S.view;
   if (S.skyMode !== 'sky') h += '&m=' + S.skyMode;
   if (S.atab !== 'skyline') h += '&p=' + S.atab;
-  ['g', 'a'].forEach(function (k) { var v = FIND_IDS[k].map(function (id) { return $(id).value; }).join(';'); if (v.replace(/;/g, '')) h += '&' + k + '=' + v; });
+  ['a'].forEach(function (k) { var v = FIND_IDS[k].map(function (id) { return $(id).value; }).join(';'); if (v.replace(/;/g, '')) h += '&' + k + '=' + v; });
+  var gh = FIND.dom.sol ? gHash() : FIND.hashG; if (gh) h += '&g=' + gh;
   if (S.view === 'find' && $('fStart').value) h += '&f=' + $('fStart').value + ';' + $('fDays').value;
   try { history.replaceState(null, '', '#' + h); } catch (x) {}
 }
 function readHash() {
   var q = {}; (location.hash || '').replace(/^#/, '').split('&').forEach(function (kv2) { var p = kv2.split('='); if (p[0]) q[p[0]] = decodeURIComponent(p.slice(1).join('=') || ''); });
-  if (q.h === '10') S.hobs = 10;
+  if (q.h && HOBS_OPTS.indexOf(+q.h) >= 0) S.hobs = +q.h;
+  if (q.d && isFinite(+q.d)) S.spanD = clamp(Math.round(+q.d), 1, 365);
+  if (q.tz === 'local') S.tz = 'local';
+  if (q.track === 'earth' || q.track === 'sun') S.track = q.track;
   if (q.l) {
     var a = q.l.split(';'), num = function (v, d) { var x = parseFloat(v); return isFinite(x) ? x : d; };
     S.sunFracMin = [0, 0.5, 1].indexOf(num(a[0], 0)) >= 0 ? num(a[0], 0) : 0; S.sunMin = num(a[1], null);
@@ -368,9 +446,10 @@ function readHash() {
     if (idx >= 0) S.sel = idx;
   }
   if (q.v === 'find' || q.v === 'list' || q.v === 'method') S.view = q.v;
-  if (q.m === 'polar' || q.m === '3d') S.skyMode = q.m;
+  if (q.m === 'polar' || q.m === '3d' || q.m === 'earth') S.skyMode = q.m;
   if (ATABS.indexOf(q.p) >= 0) S.atab = q.p;
-  ['g', 'a', 'f'].forEach(function (k) { if (q[k]) q[k].split(';').forEach(function (v, i) { var id = FIND_IDS[k][i]; if (id && (v === '' || /^[-\d.]+$/.test(v))) $(id).value = v; }); });
+  if (q.g && /^[a-z:.,\d-]+$/.test(q.g)) FIND.hashG = q.g;
+  ['a', 'f'].forEach(function (k) { if (q[k]) q[k].split(';').forEach(function (v, i) { var id = FIND_IDS[k][i]; if (id && (v === '' || /^[-\d.]+$/.test(v))) $(id).value = v; }); });
   var t0 = q.t ? Date.parse(q.t) : NaN;
   return isFinite(t0) ? t0 : null;
 }
@@ -384,7 +463,7 @@ $('shareBtn').addEventListener('click', function () {
 /* ================= settings ================= */
 function syncControls() {
   $('sunFrac').value = String(S.sunFracMin); $('sunMin').value = S.sunMin === null ? '' : S.sunMin;
-  $('linkMin').value = S.linkMin; $('ground').checked = S.ground; $('hobs').value = String(S.hobs);
+  $('linkMin').value = S.linkMin; $('ground').checked = S.ground; syncHobs(); syncSpan();
   $('optGrid').setAttribute('aria-pressed', S.opt.grid ? 'true' : 'false');
   var er = LWB.ephRange();
   $('ephNote').textContent = 'SPICE ephemeris: ' + iso(er[0]).slice(0, 10) + ' to ' + iso(er[1]).slice(0, 10) + '. Other dates use a labelled fallback.';
@@ -397,10 +476,22 @@ function readLimits() {
 }
 ['sunFrac', 'sunMin', 'linkMin'].forEach(function (id) { $(id).addEventListener('change', function () { readLimits(); recompute(false); refreshAnalysis(); }); });
 $('horizon').addEventListener('change', function () { S.horizonD = +$('horizon').value; limSummary(); refreshData(true); refreshAnalysis(); });
-$('hobs').addEventListener('change', function () { S.hobs = +$('hobs').value; SITES.forEach(applyHorizon); recompute(true); });
+/* Observer height: one of HOBS_OPTS, each with its own exact LOLA mask. */
+function setHobs(h) { if (HOBS_OPTS.indexOf(h) < 0 || h === S.hobs) return; S.hobs = h; SITES.forEach(applyHorizon); syncHobs(); recompute(true); }
+function syncHobs() { $('hobs').value = String(S.hobs); }
+$('hobs').addEventListener('change', function () { setHobs(+this.value); });
 $('ground').addEventListener('change', function () { S.ground = $('ground').checked; recompute(true); });
-$('start').addEventListener('change', function () { var v = $('start').value; if (!v) return; var p = v.split('-'); S.startMs = Date.UTC(+p[0], +p[1] - 1, +p[2]); S.tMs = S.startMs; recompute(true); });
-$('span').addEventListener('change', function () { S.spanD = +$('span').value; recompute(true); });
+/* Start: a date and time (UTC, or local when the clock is local); the period may start at any minute. */
+$('start').addEventListener('change', function () { var ms = parseZoned($('start').value); if (!isFinite(ms)) return; S.startMs = Math.round(ms / 60000) * 60000; S.tMs = S.startMs; recompute(true); });
+/* Length: one of the presets or a custom number of days, 1 to 365. */
+function setSpan(d) { d = clamp(Math.round(d), 1, 365); if (d === S.spanD) return; S.spanD = d; syncSpan(); recompute(true); }
+function syncSpan() {
+  var pre = [3, 14, 30, 60, 120].indexOf(S.spanD) >= 0;
+  if (document.activeElement !== $('span')) $('span').value = pre ? String(S.spanD) : 'custom';
+  $('spanCWrap').hidden = $('span').value !== 'custom'; if (!pre) $('spanC').value = S.spanD;
+}
+$('span').addEventListener('change', function () { if (this.value === 'custom') { $('spanCWrap').hidden = false; $('spanC').focus(); setSpan(+$('spanC').value || 45); } else setSpan(+this.value); });
+$('spanC').addEventListener('change', function () { var v = parseFloat(this.value); if (isFinite(v)) setSpan(v); this.value = S.spanD; });
 function refreshAnalysis() { if (S.view === 'find') findCompute(); }
 /* steps true: geometry changed (period, observer height, stations, relays). false: only the constraints. */
 function recompute(steps) {
@@ -409,7 +500,7 @@ function recompute(steps) {
     if (steps) { ensureProp(); buildSteps(); SITES.forEach(computeSite); } else SITES.forEach(function (q) { if (q.ready) computeOpen(q); });
     $('t').max = (spanSteps() - 1) * STEP_MIN;
     var end = S.startMs + (spanSteps() - 1) * STEP_MS; if (S.tMs > end) S.tMs = end; if (S.tMs < S.startMs) S.tMs = S.startMs;
-    limSummary(); renderLook(); updateTime(); refreshData(true); kick(); busy.hidden = true;
+    limSummary(); renderLook(); renderComms(); updateTime(); refreshData(true); kick(); busy.hidden = true;
     if (steps) refreshAnalysis();
   }
   if (steps) { busy.hidden = false; setTimeout(run, 20); } else run();
@@ -529,9 +620,12 @@ buildGrid(); loadComms();
 var hashT = readHash();
 if (hashT !== null) S.startMs = Math.floor(hashT / DAY) * DAY;
 SITES.forEach(applyHorizon);
-$('start').value = new Date(S.startMs).toISOString().slice(0, 10);
+$('start').value = toZonedInput(S.startMs);
 S.tMs = hashT !== null ? hashT : S.startMs + DAY / 2;
 syncControls(); helperText(); renderComms(); renderMethod();
+$('mLearn').innerHTML = Object.keys(LEARN).map(function (k) { var L = LEARN[k]; return '<li><b>' + esc(L[0]) + '</b>: <a href="' + L[2] + '" target="_blank" rel="noopener">' + esc(L[1]) + '</a></li>'; }).join('');
+$('gsLearn').innerHTML = learn('dsn', 'Deep Space Network') + ' ' + learn('dsnbasics', 'How DSN links work');
+setTz(S.tz);
 // On a phone the scenario panels start closed, so the view comes right after the site.
 if (window.innerWidth < 900) ['pTime', 'pLim', 'pSat'].forEach(function (id) { $(id).open = false; });
 // First paint needs only the selected site; the rest are filled in afterwards, a few per frame.

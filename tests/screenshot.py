@@ -127,17 +127,19 @@ try:
         pg.locator('.lower').screenshot(path=out + '/d2_slip.png')
         pg.click('#slipTable tr[data-t] >> nth=5'); pg.wait_for_timeout(1000)
         assert '2027 Mar 12' in txt(pg, '#tLabel'), 'a slip row should move the time: ' + txt(pg, '#tLabel')
-        pg.fill('#tDate', '2027-03-05'); pg.dispatch_event('#tDate', 'change'); pg.wait_for_timeout(1000)
-        assert '2027 Mar 5 12:00' in ' '.join(pg.inner_text('#tLabel').split()), 'the date box should move the time and keep the time of day: ' + pg.inner_text('#tLabel')
+        pg.fill('#tTime', '2027-03-05T12:00'); pg.dispatch_event('#tTime', 'change'); pg.wait_for_timeout(1000)
+        assert '2027 Mar 5 12:00' in ' '.join(pg.inner_text('#tLabel').split()), 'the time box should move the time: ' + pg.inner_text('#tLabel')
 
         atab('maps'); pg.wait_for_timeout(1000)
         pg.locator('.lower').screenshot(path=out + '/d2_maps.png')
 
         atab('unc')
         pg.wait_for_function('document.getElementById("uTable").textContent.indexOf("Across 16 clones") >= 0', timeout=60000)
-        assert 'Skyline scatter across 16' in txt(pg, '#vTerrUnc'), 'terrain uncertainty not stated: ' + txt(pg, '#vTerrUnc')
-        print('uncertainty:', txt(pg, '#uHead')[:130], '|', txt(pg, '#uTable'))
-        print('terrain uncertainty:', txt(pg, '#vTerrUnc'))
+        tc = lambda sel: pg.evaluate('s => document.querySelector(s).textContent', sel)
+        assert 'Skyline scatter across 16' in tc('#vTerrUnc'), 'terrain uncertainty not stated: ' + tc('#vTerrUnc')
+        assert 'Ground height' in txt(pg, '#uCards') and 'Skyline edge' in txt(pg, '#uCards'), 'plain-language uncertainty cards missing: ' + txt(pg, '#uCards')
+        print('uncertainty cards:', txt(pg, '#uCards').replace(chr(10), ' | '))
+        print('uncertainty table:', tc('#uTable'))
         pg.locator('.lower').screenshot(path=out + '/d2_unc.png')
 
         atab('model')
@@ -241,7 +243,7 @@ try:
             pg.click('#play'); pg.wait_for_timeout(1000); pg.click('#play'); pg.wait_for_timeout(800)
             assert len(errs) == n_err, 'errors while playing with the catalogue: %s' % errs[n_err:]
             print('played a second with the catalogue; time now', txt(pg, '#tLabel'))
-            pg.fill('#tDate', '2027-03-05'); pg.dispatch_event('#tDate', 'change'); pg.wait_for_timeout(1500)
+            pg.fill('#tTime', '2027-03-05T12:00'); pg.dispatch_event('#tTime', 'change'); pg.wait_for_timeout(1500)
         nsat0 = pg.locator('#satList .comrow').count()
         pg.click('#satAdd summary'); pg.fill('#satName', 'Test numeric')
         pg.select_option('#satKind', 'num')
@@ -318,8 +320,12 @@ try:
         print('survey evaluated; funnel:', txt(pg, '#funnel'))
         print('survey note:', txt(pg, '#fSurveyNote'), '| constraints in use:', txt(pg, '#fLim'))
         pg.screenshot(path=out + '/d8_find.png', full_page=True)
-        for k, v in [('gIrr', '700'), ('gDark', '150'), ('gEarth', '40'), ('gSlope', '10')]:
-            pg.fill('#' + k, v); pg.dispatch_event('#' + k, 'change')
+        # ranges (2026-11-15 finder): parts of the scores open under "Set the parts"
+        pg.click('.cons[data-k="sol"] details > summary'); pg.click('.cons[data-k="ear"] details > summary')
+        for k, end, v in [('irr', 'lo', '700'), ('dark', 'hi', '150'), ('earth', 'lo', '40'), ('slope', 'hi', '10')]:
+            sel = '.cons[data-k="%s"] > .dual .%s' % (k, end)
+            pg.fill(sel, v); pg.dispatch_event(sel, 'change')
+        assert pg.evaluate("document.querySelector('.cons[data-k=sol]').classList.contains('frozen')"), 'setting a solar part should freeze the solar score'
         pg.wait_for_timeout(1000)
         print('funnel with goals:', txt(pg, '#funnel'))
         ncand = pg.locator('#fTable tr[data-k]').count()

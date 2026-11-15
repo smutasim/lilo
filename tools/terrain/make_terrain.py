@@ -19,7 +19,7 @@ import tifffile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lolaterrain as lt  # noqa: E402
 
-HOBS = [2.0, 10.0]
+HOBS = [2.0, 10.0, 0.0, 5.0, 20.0, 50.0, 100.0]   # first height: the one the distances and the 3D view use
 GRID_N, GRID_D, GRID_NB, GRID_HOBS = 21, 100.0, 720, 2.0
 
 

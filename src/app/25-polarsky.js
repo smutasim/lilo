@@ -128,12 +128,14 @@ polCv.addEventListener('pointermove', function (e) {
 });
 polCv.addEventListener('pointerleave', function () { polHover = false; polarReadDefault(); });
 function setSkyMode(m) {
-  S.skyMode = m === 'polar' || m === '3d' ? m : 'sky';
-  var pol = S.skyMode === 'polar', t3 = S.skyMode === '3d', sky = S.skyMode === 'sky';
-  skyCv.hidden = !sky; polCv.hidden = !pol; $('sky3d').hidden = !t3;
-  $('polarRead').hidden = !pol; $('skyNote').hidden = !sky; $('t3Read').hidden = !t3;
-  $('modeSky').setAttribute('aria-selected', sky ? 'true' : 'false'); $('modePolar').setAttribute('aria-selected', pol ? 'true' : 'false'); $('mode3d').setAttribute('aria-selected', t3 ? 'true' : 'false');
-  $('lookGrp').hidden = !sky; $('t3Grp').hidden = !t3; $('polGrp').hidden = !pol;
+  S.skyMode = m === 'polar' || m === '3d' || m === 'earth' ? m : 'sky';
+  var pol = S.skyMode === 'polar', t3 = S.skyMode === '3d', sky = S.skyMode === 'sky', fe = S.skyMode === 'earth';
+  skyCv.hidden = !sky; polCv.hidden = !pol; $('sky3d').hidden = !t3; $('skyEarth').hidden = !fe;
+  $('polarRead').hidden = !pol; $('skyNote').hidden = !sky; $('t3Read').hidden = !t3; $('feRead').hidden = !fe;
+  $('modeSky').setAttribute('aria-selected', sky ? 'true' : 'false'); $('modePolar').setAttribute('aria-selected', pol ? 'true' : 'false'); $('mode3d').setAttribute('aria-selected', t3 ? 'true' : 'false'); $('modeEarth').setAttribute('aria-selected', fe ? 'true' : 'false');
+  $('lookGrp').hidden = !sky; $('t3Grp').hidden = !t3; $('polGrp').hidden = !pol; $('feGrp').hidden = !fe;
+  $('vState').hidden = fe;
+  if (!t3) t3HideLabels();
   kick();
 }
 /* Near the pole the plot is zoomed to the few degrees round the horizon where the Sun and Earth live; the whole
@@ -147,3 +149,4 @@ $('polZoom').addEventListener('click', function (e) {
 $('modeSky').addEventListener('click', function () { setSkyMode('sky'); writeHash(); });
 $('modePolar').addEventListener('click', function () { setSkyMode('polar'); writeHash(); });
 $('mode3d').addEventListener('click', function () { setSkyMode('3d'); writeHash(); });
+$('modeEarth').addEventListener('click', function () { setSkyMode('earth'); writeHash(); });

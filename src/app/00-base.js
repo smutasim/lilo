@@ -76,8 +76,43 @@ var S = {
   sunFracMin: 0, sunMin: null, sunMax: null, linkMin: 0, needD: 0, ground: false,
   hobs: 2, N: 0, sel: 0, tMs: 0, playing: false, speed: 6,
   opt: { lines: false, names: false, grid: false },
-  view: 'site', skyMode: 'sky', atab: 'skyline'
+  view: 'site', skyMode: 'sky', atab: 'skyline',
+  tz: 'utc',      // 'utc' or 'local': local is the time zone of the Earth observer (From Earth view)
+  track: null     // 'earth' | 'sun' | 'sat': the sky view keeps that body centred as time moves
 };
+/* The observer on Earth for the From Earth view and for local time. Default: Goldstone DSS-14, geodetic WGS 84
+   (DSN 810-005, Module 301, Rev. N, Table 5: "Geodetic Coordinates for DSN Stations With Respect to the WGS 84
+   Ellipsoid"), so the height is above the WGS 84 ellipsoid, not above the geoid. */
+var EOBS = { name: 'Goldstone DSS-14 (DSN)', lat: 35 + 25 / 60 + 33.24312 / 3600, lon: 243 + 6 / 60 + 37.66244 / 3600 - 360, h: 1001.390, tz: 'America/Los_Angeles', src: 'DSN 810-005, Module 301, Rev. N, Table 5' };
+(function () { try { var o = JSON.parse(localStorage.getItem('lwb.earthobs.v1') || 'null'); if (o && isFinite(o.lat) && isFinite(o.lon) && Math.abs(o.lat) <= 90) EOBS = o; } catch (x) {} })();
+try { if (localStorage.getItem('lwb.tz.v1') === 'local') S.tz = 'local'; } catch (x) {}
+/* Time-zone offset (ms) of the shown clock at an instant: 0 for UTC, else the observer's zone from the browser's
+   own time-zone database (Intl). Cached per hour. */
+var TZC = {};
+function tzZone() { return EOBS.tz || 'UTC'; }
+function tzOffMs(ms) {
+  if (S.tz !== 'local') return 0;
+  var z = tzZone(), k = z + ':' + Math.floor(ms / 3600000);
+  if (TZC[k] !== undefined) return TZC[k];
+  var off = 0;
+  try {
+    var p = {}; new Intl.DateTimeFormat('en-US', { timeZone: z, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' }).formatToParts(new Date(ms)).forEach(function (x) { p[x.type] = +x.value; });
+    off = Date.UTC(p.year, p.month - 1, p.day, p.hour % 24, p.minute, p.second) - Math.floor(ms / 1000) * 1000;
+  } catch (x) { off = 0; }
+  TZC[k] = off; return off;
+}
+function tzLabel(ms) {
+  if (S.tz !== 'local') return 'UTC';
+  try { var t = new Intl.DateTimeFormat('en-US', { timeZone: tzZone(), timeZoneName: 'short' }).formatToParts(new Date(ms)).filter(function (x) { return x.type === 'timeZoneName'; })[0]; return t ? t.value : 'local'; } catch (x) { return 'local'; }
+}
+function shiftTz(ms) { return ms + tzOffMs(ms); }
+/* "YYYY-MM-DDTHH:MM" in the shown zone -> UTC ms. */
+function parseZoned(v) {
+  var m = /^(\d{4})-(\d\d)-(\d\d)(?:[T ](\d\d):(\d\d))?/.exec(v || ''); if (!m) return NaN;
+  var g = Date.UTC(+m[1], +m[2] - 1, +m[3], +(m[4] || 0), +(m[5] || 0)), t = g - tzOffMs(g);
+  return g - tzOffMs(t);
+}
+function toZonedInput(ms) { return new Date(shiftTz(Math.round(ms / 60000) * 60000)).toISOString().slice(0, 16); }
 var STEPS = null, HELPER = { ok: false, url: 'http://127.0.0.1:8791' };
 var cam = { yaw: 90, pitch: 18, hfov: 80 };
 function sunOK(f) { return S.sunFracMin > 0 ? f >= S.sunFracMin - 1e-9 : f > 0; }
@@ -90,7 +125,14 @@ function saveCustom() {
 }
 /* A site's horizon: the LOLA mask for the chosen observer height where one exists (else the height that does),
    or a smooth sphere with the observer hobs above it. */
-function maskHeight(s) { var t = s.terr; if (!t) return null; return t.mask[String(S.hobs)] ? S.hobs : +Object.keys(t.mask)[0]; }
+/* Observer heights offered: each has its own exact LOLA mask (tools/terrain/add_heights.py). A point without a mask
+   at the chosen height uses the nearest height it has, and the page says so. */
+var HOBS_OPTS = [0, 2, 5, 10, 20, 50, 100];
+function maskHeight(s) {
+  var t = s.terr; if (!t) return null;
+  if (t.mask[String(S.hobs)]) return S.hobs;
+  return Object.keys(t.mask).map(Number).sort(function (a, b) { return Math.abs(a - S.hobs) - Math.abs(b - S.hobs); })[0];
+}
 function applyHorizon(s) {
   var t = s.terr, h = maskHeight(s);
   if (t) {
@@ -128,9 +170,11 @@ function i16b64(a) { var u = new Uint8Array(a.buffer, a.byteOffset, a.byteLength
 /* ================= formatting ================= */
 function pad(n) { return (n < 10 ? '0' : '') + n; }
 var MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-function fmtDay(ms) { var d = new Date(ms); return MON[d.getUTCMonth()] + ' ' + d.getUTCDate(); }
-function fmtDT(ms) { var d = new Date(Math.round(ms / 60000) * 60000); return fmtDay(d.getTime()) + ', ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ' UTC'; }
-function fmtFull(ms) { var d = new Date(ms); return d.getUTCFullYear() + ' ' + fmtDay(ms) + '  ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ' UTC'; }
+/* Dates and clock times are shown in UTC, or in the Earth observer's zone when S.tz is 'local'. Files keep UTC (iso). */
+function fmtDay(ms) { var d = new Date(shiftTz(ms)); return MON[d.getUTCMonth()] + ' ' + d.getUTCDate(); }
+function fmtClock(ms) { var m = Math.round(ms / 60000) * 60000, d = new Date(shiftTz(m)); return pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()); }
+function fmtDT(ms) { var m = Math.round(ms / 60000) * 60000; return fmtDay(m) + ', ' + fmtClock(m) + ' ' + tzLabel(m); }
+function fmtFull(ms) { var d = new Date(shiftTz(ms)); return d.getUTCFullYear() + ' ' + fmtDay(ms) + '  ' + fmtClock(ms) + ' ' + tzLabel(ms); }
 function iso(ms) { return new Date(Math.round(ms / 60000) * 60000).toISOString().slice(0, 16) + 'Z'; }
 function fmtCoord(lat, lon) { var p = Math.abs(lat) > 80 ? 3 : 2; return Math.abs(lat).toFixed(p) + '°' + (lat < 0 ? 'S' : 'N') + '  ' + Math.abs(lon).toFixed(p) + '°' + (lon < 0 ? 'W' : 'E'); }
 function fmtDur(steps) { var h = steps * STEP_MIN / 60; return h < 48 ? Math.round(h) + ' h' : (h / 24).toFixed(1) + ' days'; }
@@ -148,5 +192,21 @@ function pct(f) { return (f > 0 && f < 0.01 ? '<1' : f < 1 && f > 0.99 ? '>99' :
 function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 function stepMs(i) { return S.startMs + i * STEP_MS; }
 function stepOf(ms) { return clamp(Math.round((ms - S.startMs) / STEP_MS), 0, S.N - 1); }
+/* Background reading for the terms the page uses: NASA pages only (Sharif's rule). learn(k) gives a small link. */
+var LEARN = {
+  libration: ['Libration', 'NASA SVS: Moon Essentials, Libration in Longitude', 'https://svs.gsfc.nasa.gov/5195'],
+  phases: ['Moon phases and the lunar day', 'NASA Science: Moon Phases', 'https://science.nasa.gov/moon/moon-phases/'],
+  rotation: ['Why one face points at Earth (synchronous rotation, far side)', 'NASA Science: Top Moon Questions', 'https://science.nasa.gov/moon/top-moon-questions/'],
+  southpole: ['The lunar south pole: low Sun, long shadows', 'NASA: The Lunar South Pole Region', 'https://www.nasa.gov/reference/moonbase-environment/'],
+  psr: ['Permanently shadowed regions and ice', 'NASA Science: Moon Water and Ices', 'https://science.nasa.gov/moon/moon-water-and-ices/'],
+  lola: ['LOLA, the laser altimeter behind the terrain', 'NASA GSFC: Lunar Orbiter Laser Altimeter', 'https://lola.gsfc.nasa.gov/science.html'],
+  lro: ['Lunar Reconnaissance Orbiter (LOLA, LROC)', 'NASA Science: LRO Spacecraft and Instruments', 'https://science.nasa.gov/mission/lro/spacecraft-and-instruments/'],
+  dsn: ['Deep Space Network', 'NASA: Deep Space Network', 'https://www.nasa.gov/communicating-with-missions/dsn/'],
+  dsnbasics: ['How the DSN links to spacecraft', 'NASA Science: Basics of Space Flight, Chapter 18', 'https://science.nasa.gov/learn/basics-of-space-flight/chapter18-1/'],
+  orbits: ['Orbits and Kepler\'s laws', 'NASA Science: Orbits and Kepler\'s Laws', 'https://science.nasa.gov/solar-system/orbits-and-keplers-laws/'],
+  grail: ['GRAIL and the Moon\'s uneven gravity', 'NASA Science: GRAIL', 'https://science.nasa.gov/mission/grail/'],
+  grgm: ['GRGM1200A gravity model', 'NASA GSFC PGDA: Lunar Gravity Field GRGM1200A', 'https://pgda.gsfc.nasa.gov/products/50']
+};
+function learn(k, txt) { var L = LEARN[k]; return L ? '<a class="learn" href="' + L[2] + '" target="_blank" rel="noopener" title="' + esc(L[1]) + ' (opens a NASA page)">' + (txt || 'what is this?') + '</a>' : ''; }
 var COMPASS = ['N','NE','E','SE','S','SW','W','NW'];
 function compass16(az) { return ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(az / 22.5) % 16]; }

@@ -315,6 +315,23 @@ function satPasses(site, s) {
   s.passes = { key: key, list: list };
   return list;
 }
+/* How often the satellite comes back over the site's skyline, and for how long, over the timeline: from the exact
+   pass list. Passes cut by the timeline's ends are left out of the durations. */
+function satCadence(site, s) {
+  var L = satPasses(site, s), full = L.filter(function (p) { return !p.open && !p.cut; });
+  if (!L.length) return { n: 0 };
+  var dur = full.map(function (p) { return p.t1 - p.t0; }), gaps = [];
+  for (var i = 1; i < L.length; i++) gaps.push(L[i].t0 - L[i - 1].t0);
+  var sum = function (a) { return a.reduce(function (x, y) { return x + y; }, 0); };
+  var vis = sum(L.map(function (p) { return p.t1 - p.t0; }));
+  return { n: L.length, perDay: L.length / S.spanD, revisit: gaps.length ? sum(gaps) / gaps.length : null, gapMax: gaps.length ? Math.max.apply(null, gaps) : null,
+           durAvg: dur.length ? sum(dur) / dur.length : null, durMin: dur.length ? Math.min.apply(null, dur) : null, durMax: dur.length ? Math.max.apply(null, dur) : null, share: vis / (S.spanD * DAY) };
+}
+function cadenceText(c) {
+  if (!c.n) return 'No pass above the skyline in the ' + S.spanD + '-day timeline.';
+  return c.n + ' passes in ' + S.spanD + ' days' + (c.revisit ? ', one every ' + fmtSpanS(c.revisit) + ' on average (longest wait ' + fmtSpanS(c.gapMax) + ')' : '') +
+    (c.durAvg ? '; each lasts ' + fmtSpanS(c.durAvg) + ' on average (' + fmtSpanS(c.durMin) + ' to ' + fmtSpanS(c.durMax) + ')' : '') + '; in view ' + pct(c.share) + ' of the time.';
+}
 /* The pass in progress or the next one: {up, t (the next change, or null when none in the timeline)}. */
 function satNext(site, s, ms) {
   var L = satPasses(site, s), lo = 0, hi = L.length;
@@ -368,6 +385,7 @@ function propPump() {
   PROPQ.timer = setTimeout(function () {
     PROPQ.timer = null;
     var done = false;
+    if (!q.job) { propPump(); return; } // the period moved while this slice waited: ensureProp dropped or replaced the job
     try { done = q.job.j.advance(40); } catch (x) { q.err = String(x && x.message || x); q.job = null; renderComms(); propPump(); return; }
     if (done) { q.tab = q.job.j.result(); q.job = null; q.stamp++; q.passes = null; q.err = ''; PROPQ.dirty = true; renderComms(); }
     propStatus(); propPump();
@@ -408,12 +426,13 @@ function renderComms() {
     else if (q.on && q.kind === 'num' && !q.twoBody && !q.tab && !propWanted(q)) st = '<span class="mu c-stop">Not propagated: the period starts ' + Math.round(Math.abs(S.startMs - q.rec.epoch) / DAY) + ' days from this state, which was checked for ' + q.cat.checked_days + ' days. <button type="button" class="link" data-force="' + k + '">Propagate anyway</button></span>';
     else if (q.on && q.kind === 'num' && q.twoBody) st = '<span class="mu c-stop">Propagator not loaded: two-body orbit shown</span>';
     var chk = q.cat && q.cat.check_text ? '<span class="mu">' + esc(q.cat.check_text) + '</span>' : '';
+    if (q.on && satReady(q) && !q.job && SITES[S.sel]) chk = '<span class="mu c-sat"><b>Over ' + esc(SITES[S.sel].name.split(',')[0]) + ':</b> ' + esc(cadenceText(satCadence(SITES[S.sel], q))) + '</span>' + chk;
     return '<div class="comrow"><input type="checkbox" data-sat="' + k + '"' + (q.on ? ' checked' : '') + ' aria-label="Show ' + esc(q.name) + '"><span><b>' + esc(q.name) + '</b>' +
       '<span class="mu"' + (q.cat ? ' title="' + esc(q.cat.about || '') + '"' : '') + '>' + esc(q.on ? satSummary(q) : (satOrbitText(q) || satModelText(q))) + '</span>' + (q.on ? chk + st : '') +
       (q.on ? '<label class="opt"><input type="checkbox" data-relay="' + k + '"' + (q.relay ? ' checked' : '') + '>Use as a relay to Earth</label>' : '') + '</span>' +
       (q.builtin ? '<span></span>' : '<button type="button" class="x" data-delsat="' + k + '" aria-label="Remove ' + esc(q.name) + '">×</button>') + '</div>';
   }).join('') : '<p class="hint">None yet.</p>';
-  $('satNote').textContent = 'Ticked satellites are drawn in the views and get a timeline row. Only those marked as a relay count toward the link. Your satellites and stations are saved in this browser.';
+  $('satNote').innerHTML = 'Ticked satellites are drawn in the views and get a timeline row; under each, how often it comes back over this site and for how long. Only those marked as a relay count toward the link. Your satellites and stations are saved in this browser. ' + learn('orbits', 'Orbits') + ' ' + learn('grail', 'Why lunar orbits drift (GRAIL gravity)');
   var n = satsShown().length; $('sbSat').innerHTML = 'Satellites: <b>' + n + '</b>' + (satsOn().length ? ', ' + satsOn().length + ' as relay' : '');
 }
 /* geom true: the link itself may have changed (stations, relays), so the step arrays are rebuilt. */

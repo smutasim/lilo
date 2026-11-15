@@ -11,17 +11,20 @@
             <td class="wrap">Apparent positions (light time and stellar aberration) from the Moon, in the Moon's mean Earth / polar axis frame (MOON_ME), precomputed every 2 h and interpolated. Finite disks; no atmosphere. "Sunlit" means any part of the Sun is visible unless the constraint says otherwise. Outside the precomputed span the page falls back to astronomy-engine and says so.</td>
             <td class="wrap">JPL DE440 through SPICE. Against the JPL Horizons System at 4 sites and 6 epochs in 2027 the largest difference in azimuth or elevation is 0.00002&deg; (0.0029&deg; on the fallback path).</td></tr>
           <tr><td>Terrain</td>
-            <td class="wrap">LOLA elevation models turned into 3D horizon masks with curvature, 1,440 azimuth bins, observer 2 m or 10 m above the ground. Sites north of 60&deg;S have no terrain and use a smooth sphere.</td>
+            <td class="wrap">LOLA elevation models turned into 3D horizon masks with curvature, 1,440 azimuth bins, observer 0, 2, 5, 10, 20, 50 or 100 m above the ground, each height with its own mask computed the same way (no interpolation; tools/terrain/add_heights.py rebuilds the 2 m mask identically as a check). Points from the Site finder have a 2 m mask only, and the page says when it uses another height. Ground heights are above the 1737.4 km reference sphere (the LOLA datum). Sites north of 60&deg;S have no terrain and use a smooth sphere.</td>
             <td class="wrap">5 m site tiles and 20 m polar mosaic from NASA GSFC PGDA (Barker et al. 2021), 240 m grid from PDS (LRO-L-LOLA-4-GDR-V1.0; Smith et al.). Average illumination compared with Mazarico et al. 2011 and the PGDA products (docs/validation.md).</td></tr>
           <tr><td>Terrain uncertainty</td>
-            <td class="wrap">Where PGDA publishes error clones of the 5 m model, the headline numbers are recomputed on 16 of them and the lowest and highest results are shown. The range covers elevation-model error only and is not a confidence interval. Elsewhere terrain error is not quantified, and the page says so.</td>
+            <td class="wrap">Where PGDA publishes error clones of the 5 m model, the page states the ground-height and skyline-edge scatter (one standard deviation across 16 clones) in plain terms, and the headline numbers are recomputed on the clones with the lowest and highest results shown. The range covers elevation-model error only and is not a confidence interval. Elsewhere terrain error is not quantified, and the page says so.</td>
             <td class="wrap">Barker et al. 2021 clone elevation models.</td></tr>
           <tr><td>Irradiance</td>
             <td class="wrap">1361 W/m&sup2; at 1 au, scaled by the Sun's distance and the visible fraction of its disk, on a surface that faces the Sun. No limb darkening, no array model: W/m&sup2;, not watts.</td>
             <td class="wrap">IAU 2015 Resolution B3 nominal total solar irradiance.</td></tr>
           <tr><td>Link to Earth</td>
             <td class="wrap">Direct: Earth's centre above the local skyline by the margin. With "ground stations" ticked, a ticked station must also have the Moon above its elevation limit (sampled every 30 min). Relay: a satellite marked as a relay must clear the site's skyline by its own margin, and the line from it to Earth's centre must pass outside the 1737.4 km sphere. Geometric only: no link budget, antenna pattern or pointing.</td>
-            <td class="wrap">DSN 70 m antenna coordinates and the 10.0&deg; transmit limit: DSN 810-005, Module 301, Rev. N.</td></tr>
+            <td class="wrap">DSN 70 m antenna coordinates and the 10.0&deg; transmit limit: DSN 810-005, Module 301, Rev. N. Station positions are geodetic WGS 84 and heights are above the WGS 84 ellipsoid (Table 5, "Geodetic Coordinates for DSN Stations With Respect to the WGS 84 Ellipsoid"); user stations are entered the same way.</td></tr>
+          <tr><td>From Earth view</td>
+            <td class="wrap">The Moon in the sky of a place on Earth (default Goldstone DSS-14), for the public. Topocentric Moon and Sun from astronomy-engine 2.1.19 (the page's fallback ephemeris, checked against Horizons to 0.003° from the Moon; not separately checked from Earth), turned into the observer's horizon frame for a geodetic WGS 84 position. The Moon's apparent altitude includes atmospheric refraction (Saemundsson formula, Meeus <i>Astronomical Algorithms</i>, as astronomy-engine applies it) and the lift is stated. The binocular view shows the phase, the libration of the moment (IAU rotation model) and the landing site. Sky colour, star fading and the dimming and reddening near the horizon (Kasten and Young 1989 air mass, illustrative extinction per colour) are drawn for appearance only; they enter no number. "Could a lander talk to this place" combines the site's own Earth-above-skyline margin with the Moon's altitude at the observer (and the 10.0&deg; DSN limit when the observer is a DSN antenna).</td>
+            <td class="wrap">Place search: Open-Meteo geocoding API (GeoNames data, CC BY 4.0); the search text is sent only when Find is pressed. Time zones: the browser's own IANA database (Intl).</td></tr>
           <tr><td>Satellite orbits</td>
             <td class="wrap" id="mProp"></td>
             <td class="wrap" id="mPropSrc"></td></tr>
@@ -32,7 +35,7 @@
             <td class="wrap">Display only: no number comes from them. South-pole maps show the LROC WAC south-pole summer mosaic (images of 21 September to 23 October 2010; its shadows are those dates'). The 3D view draws a 24 km square of LOLA heights at 100 m (29 km at 240 m north of 80.6&deg;S), true to scale with curvature.</td>
             <td class="wrap">WAC_ROI_SOUTH_SUMMER_100M (Speyerer et al. 2020), PDS LROC node. Registered to the LOLA grid within one 240 m pixel (correlation 0.884, best match at zero shift).</td></tr>
           <tr><td>Site finder</td>
-            <td class="wrap">Every one of 3,600 precomputed horizons (one per 5.04 km cell from 85&deg;S to the pole, at the brightest pixel of the PGDA average-visibility map) is evaluated over the stay; nothing is sampled at random.</td>
+            <td class="wrap">Every one of 3,600 precomputed horizons (one per 5.04 km cell from 85&deg;S to the pole, at the brightest pixel of the PGDA average-visibility map) is evaluated over the stay; nothing is sampled at random. Two derived scores for a first cut (requested for general users): <b>Solar availability</b> = 100 &times; the mean of (mean irradiance &divide; mean full-disk irradiance, lowest 24 h mean &divide; mean full-disk irradiance, 1 &minus; longest darkness &divide; stay); <b>Earth availability</b> = 100 &times; the mean of (share of time with a link, 1 &minus; longest outage &divide; stay). Equal weights. Each part can be constrained on its own; setting a part freezes its score at its current range.</td>
             <td class="wrap">Survey sunlit share compared with the PGDA average-visibility value at each point (docs/validation.md).</td></tr>
           <tr><td>Not modelled</td>
             <td class="wrap" colspan="2">Electrical power; thermal limits; rocks, craters and slopes below the LOLA grid spacing (slope is reported at 10 m and 40 m baselines only); terrain north of 60&deg;S; satellite manoeuvres; navigation (GNSS geometry).</td></tr>
@@ -45,7 +48,11 @@
       <div class="panel-b flush"><div class="tblwrap"><table class="cmp" id="mSats"></table></div></div>
       <div class="panel-b"><p class="hint" id="mSatNote"></p></div>
     </section>
-    <p class="hint">Other data: site coordinates from LROC, NASA and the papers cited per site; stars from Hipparcos via d3-celestial; Earth coastlines from Natural Earth via world-atlas.</p>
+    <section class="panel" aria-labelledby="mLearnH">
+      <div class="panel-h"><h2 id="mLearnH">Learn more (NASA pages)</h2></div>
+      <div class="panel-b"><ul class="learnlist" id="mLearn"></ul></div>
+    </section>
+    <p class="hint">Other data: site coordinates from LROC, NASA and the papers cited per site; stars from Hipparcos via d3-celestial; Earth coastlines from Natural Earth via world-atlas; place search from Open-Meteo (GeoNames, CC BY 4.0). Licence: Apache License 2.0 (LICENSE); third-party terms in THIRD_PARTY_NOTICES.md.</p>
     <p class="hint"><b>NASA data and resources:</b> LOLA terrain (NASA GSFC PGDA 5 m and 20 m models, error clones and illumination maps; PDS LDEM_60S_240M); LROC WAC mosaics (PDS); GRAIL gravity model GRGM1200A (NASA GSFC, PDS Geosciences); JPL Horizons; JPL/NAIF SPICE DE440 ephemerides and lunar frame kernels; DSN 810-005 ground-station data.</p>
     <p class="hint"><b>AI acknowledgement:</b> the code and text of this tool were generated with AI (Anthropic Claude, via Claude Code), directed by Sharif Mutasim. Every number comes from the cited data and sources above, not from the AI.</p>
   </div>

@@ -40,8 +40,8 @@ var T3FS = 'precision mediump float;varying vec3 vn;varying vec2 vuv;varying flo
   'void main(){vec3 n=normalize(vn);vec3 c;' +
   'if(surf==1){c=texture2D(tex,vuv).rgb;}else{float d=max(dot(n,sun),0.0);float k=0.035+vl*(0.25+1.6*d);c=pow(vec3(0.62,0.6,0.57)*k,vec3(1.0/1.6));}' +
   'float f=clamp((vd-25.0)/60.0,0.0,0.6);c=mix(c,vec3(0.008,0.012,0.02),f);gl_FragColor=vec4(c,1.0);}';
-var T3LVS = 'attribute vec3 p;uniform mat4 M;void main(){gl_Position=M*vec4(p,1.0);}';
-var T3LFS = 'precision mediump float;uniform vec3 col;void main(){gl_FragColor=vec4(col,1.0);}';
+var T3LVS = 'attribute vec3 p;uniform mat4 M;uniform float ps;void main(){gl_Position=M*vec4(p,1.0);gl_PointSize=ps;}';
+var T3LFS = 'precision mediump float;uniform vec3 col;uniform float al;uniform int round;void main(){if(round==1){vec2 d=gl_PointCoord-vec2(0.5);if(dot(d,d)>0.25)discard;}gl_FragColor=vec4(col,al);}';
 function t3Prog(gl, vs, fs) {
   function sh(t, src) { var o = gl.createShader(t); gl.shaderSource(o, src); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o)); return o; }
   var p = gl.createProgram(); gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p);
@@ -127,7 +127,7 @@ function render3D() {
   if (T3.cv.width !== Math.round(W * dpr) || T3.cv.height !== Math.round(H * dpr)) { T3.cv.width = Math.round(W * dpr); T3.cv.height = Math.round(H * dpr); }
   var Lk = LWB.look(s.geo, S.tMs);
   lastSky = { sun: { az: Lk.sunAz, alt: Lk.sunEl }, earth: { az: Lk.earthAz, alt: Lk.earthEl }, earthFrac: (1 + dot(frame(S.tMs).sunGeoU, frame(S.tMs).xr)) / 2, L: Lk };
-  updateHud();
+  updateHud(); t3HideLabels();
   if (!t3Init()) { msg.textContent = T3.fail; return; }
   var gl = T3.gl;
   gl.viewport(0, 0, T3.cv.width, T3.cv.height); gl.clearColor(0.008, 0.012, 0.024, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -153,24 +153,65 @@ function render3D() {
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, T3.tex); gl.uniform1i(gl.getUniformLocation(T3.prog, 'tex'), 0);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, M0.bi); gl.drawElements(gl.TRIANGLES, M0.nIdx, gl.UNSIGNED_INT, 0);
   la.forEach(function (l) { gl.disableVertexAttribArray(l); });
-  // the site, the Sun and Earth directions
-  var c = (M0.n - 1) / 2, z0 = M0.zc[c * M0.n + c], L = 9;
-  var ed = t3Dir(Lk.earthAz, Lk.earthEl);
-  function line(pts, col, depth) {
+  /* The site, its skyline and the lines of sight to the Sun and Earth. The observer sits its true height (2 m or 10 m)
+     above the centre node. Terrain beyond the 24 km square is not in the mesh, so the site's full LOLA skyline (terrain
+     out to 400 km) is drawn as a ring just outside the square, at the height that subtends the mask elevation from
+     the observer. A line of sight is bright up to the terrain that blocks it (the mask's distance for that azimuth,
+     where known) and faint beyond; the Sun and Earth are drawn as disks 40 km out along their true direction,
+     faint when the body is below the skyline. Display only. */
+  var c = (M0.n - 1) / 2, z0 = M0.zc[c * M0.n + c], hob = (maskHeight(s) === null ? S.hobs : maskHeight(s)) / 1000, obs = [0, z0 + hob, 0];
+  var ed = t3Dir(Lk.earthAz, Lk.earthEl), g = s.geo, Rk = M0.half * 1.08, FAR = 40;
+  var dd = s.terr && s.terr.dist && maskHeight(s) === TERRAIN.meta.hobs_m[0] ? (s.terr.dd || (s.terr.dd = LWB.b64u16(s.terr.dist))) : null;
+  function draw(pts, col, mode, alpha, size, depth) {
     gl.useProgram(T3.lprog); if (depth) gl.enable(gl.DEPTH_TEST); else gl.disable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.bindBuffer(gl.ARRAY_BUFFER, T3.lbuf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(pts), gl.DYNAMIC_DRAW);
     var l = gl.getAttribLocation(T3.lprog, 'p'); gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, 3, gl.FLOAT, false, 0, 0);
     gl.uniformMatrix4fv(gl.getUniformLocation(T3.lprog, 'M'), false, MVP); gl.uniform3f(gl.getUniformLocation(T3.lprog, 'col'), col[0], col[1], col[2]);
-    gl.drawArrays(gl.LINES, 0, pts.length / 3); gl.disableVertexAttribArray(l);
+    gl.uniform1f(gl.getUniformLocation(T3.lprog, 'al'), alpha); gl.uniform1f(gl.getUniformLocation(T3.lprog, 'ps'), size || 1);
+    gl.uniform1i(gl.getUniformLocation(T3.lprog, 'round'), mode === gl.POINTS ? 1 : 0);
+    gl.drawArrays(mode, 0, pts.length / 3); gl.disableVertexAttribArray(l); gl.disable(gl.BLEND);
   }
-  var base = [0, z0, 0], top = [0, z0 + 0.9, 0];
-  line(base.concat(top), [1, 1, 1], false);
-  line(top.concat([top[0] + sd[0] * L, top[1] + sd[1] * L, top[2] + sd[2] * L]), [0.95, 0.7, 0.29], false);
-  line(top.concat([top[0] + ed[0] * L, top[1] + ed[1] * L, top[2] + ed[2] * L]), [0.44, 0.7, 0.95], false);
+  function at(d, km) { return [obs[0] + d[0] * km, obs[1] + d[1] * km, obs[2] + d[2] * km]; }
+  // skyline ring from the mask
+  if (g.mask) {
+    var ring = [], nb = g.mask.length;
+    for (var k = 0; k <= 360; k++) { var az = k % 360, el = LWB.horizonAt(g, az), dv = t3Dir(az, 0); ring.push(dv[0] * Rk, obs[1] + Rk * Math.tan(el * D2R), dv[2] * Rk); }
+    var rl = []; for (k = 0; k < ring.length / 3 - 1; k++) rl.push(ring[k * 3], ring[k * 3 + 1], ring[k * 3 + 2], ring[k * 3 + 3], ring[k * 3 + 4], ring[k * 3 + 5]);
+    draw(rl, [0.86, 0.88, 0.92], gl.LINES, 0.55, 1, true);
+  }
+  // the observer: a short white post so it can be found, and a dot at the true observer height
+  draw([0, z0, 0, 0, z0 + 0.25, 0], [1, 1, 1], gl.LINES, 0.9, 1, false);
+  draw(obs, [1, 1, 1], gl.POINTS, 1, 5, false);
+  function sight(dv, el, hor, az, col, rad) {
+    var up = el >= hor, b = g.mask ? Math.round(az / 360 * g.mask.length) % g.mask.length : 0;
+    var block = up ? FAR : dd ? Math.max(0.05, dd[b] * 10 / 1000) : Rk;
+    if (block > FAR) block = FAR;
+    draw(obs.concat(at(dv, block)), col, gl.LINES, 1, 1, false);
+    if (block < FAR) draw(at(dv, block).concat(at(dv, FAR)), col, gl.LINES, 0.25, 1, false);
+    // marker size is symbolic (Earth drawn larger than the Sun, as in the sky: 1.9 deg against 0.53 deg)
+    draw(at(dv, FAR), col, gl.POINTS, up ? 1 : 0.3, (rad > 0.5 ? 18 : 13) * Math.min(window.devicePixelRatio || 1, 2), false);
+    return { up: up, block: block };
+  }
+  var sS = sight(sd, Lk.sunEl, Lk.sunHor, Lk.sunAz, [1, 0.78, 0.33], Lk.sunRad);
+  var sE = sight(ed, Lk.earthEl, Lk.earthHor, Lk.earthAz, [0.44, 0.7, 0.95], Lk.earthRad);
+  // labels next to the disks
+  function label(id, p, txt, col) {
+    var el = $(id); if (!el) { el = document.createElement('span'); el.id = id; el.className = 't3lab'; document.querySelector('.hero').appendChild(el); }
+    var v = [p[0], p[1], p[2], 1], o = [0, 0, 0, 0];
+    for (var i = 0; i < 4; i++) for (var j = 0; j < 4; j++) o[i] += MVP[j * 4 + i] * v[j];
+    if (o[3] <= 0 || S.skyMode !== '3d') { el.hidden = true; return; }
+    var x = (o[0] / o[3] * 0.5 + 0.5) * W, y = (0.5 - o[1] / o[3] * 0.5) * H;
+    el.hidden = x < -40 || x > W + 40 || y < -20 || y > H + 20; el.style.left = Math.round(x + 10) + 'px'; el.style.top = Math.round(y - 8) + 'px'; el.style.color = col; el.textContent = txt;
+  }
+  function why(r, el, hor) { return r.up ? deg2(el - hor) + ' above the skyline' : deg2(hor - el) + ' below the skyline' + (dd ? ', blocked ' + (r.block < 1 ? Math.round(r.block * 1000) + ' m' : r.block.toFixed(1) + ' km') + ' away' : ''); }
+  label('t3LabSun', at(sd, FAR), 'Sun: ' + why(sS, Lk.sunEl, Lk.sunHor), '#FFD27A');
+  label('t3LabEarth', at(ed, FAR), 'Earth: ' + why(sE, Lk.earthEl, Lk.earthHor), '#8CC4F5');
   msg.textContent = 'LOLA ' + s.t3d.dem + ', ' + ((M0.n - 1) * M0.d).toFixed(0) + ' km square, true scale. ' +
-    (T3.surf === 'img' ? 'Surface: ' + s.t3d.imgSrc + ' (shadows of Sep–Oct 2010).' : 'Lit ground sees the centre of the Sun at the current time. At the site itself ' + pct(Lk.sunFrac) + ' of the Sun is visible (full LOLA skyline).') +
-    ' White: the site. Amber: toward the Sun. Blue: toward Earth. Drag to turn.';
+    (T3.surf === 'img' ? 'Surface: ' + s.t3d.imgSrc + ' (shadows of Sep–Oct 2010).' : 'Lit ground sees the centre of the Sun now. At the site ' + pct(Lk.sunFrac) + ' of the Sun is visible.') +
+    ' White dot: the observer, ' + Math.round(hob * 1000) + ' m above the site. Amber / blue: lines of sight to the Sun / Earth, bright up to the terrain that blocks them, faint beyond. Grey ring: the full LOLA skyline (terrain to 400 km, most of it outside this square). Drag to turn.';
 }
+function t3HideLabels() { ['t3LabSun', 't3LabEarth'].forEach(function (id) { var el = $(id); if (el) el.hidden = true; }); }
 /* Check hook for tests/screenshot.py: across the dial, does the 3D view's centre node agree with the page's own
    skyline about whether the Sun's centre is up? Times within 0.3 deg of the skyline are counted separately. */
 window.LWB_T3CHECK = function () {

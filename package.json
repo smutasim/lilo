@@ -5,6 +5,7 @@
   "description": "Lunar landing-site analysis: Sun, Earth and satellites against LOLA skylines, with numerically propagated lunar orbiters checked against JPL Horizons; timeline of visibility, time to sunset and Earthset, solar irradiance, site comparison and a site finder over 3,600 real horizons. NASA Space Apps 2026, Lunar Landing Site Navigator.",
   "scripts": {
     "build": "node tools/build.js",
+    "publish:site": "node tools/publish_site.js",
     "test": "node tests/check_core.js && node tests/check_prop.js --quick",
     "test:core": "node tests/check_core.js",
     "test:ui": "python tests/screenshot.py",

@@ -3,6 +3,18 @@
 Compare lunar landing sites and dates by where the Sun and Earth sit against the local skyline.
 Built for the NASA Space Apps 2026 challenge *Lunar Landing Site Navigator*.
 
+**AI acknowledgement.** The code and text of this project were generated with AI (Anthropic Claude, via Claude Code),
+directed by Sharif Mutasim. Every number in the tool comes from the NASA data and cited sources below, not from the AI.
+
+**NASA data and resources used.**
+- LOLA terrain: NASA GSFC Planetary Geodesy Data Archive (PGDA) 5 m site models, 20 m polar mosaic, error clones and
+  average-illumination maps; PDS `LDEM_60S_240M`.
+- LROC WAC mosaics (PDS `LROLRC_2001`).
+- GRAIL gravity model GRGM1200A (NASA GSFC, PDS Geosciences node).
+- JPL Horizons (satellite states and validation).
+- JPL / NAIF SPICE: DE440 ephemeris and lunar frame kernels.
+- DSN 810-005 (ground-station locations).
+
 Open `dist/lunar-window-browser.html` in a browser. It is one self-contained file (about 6.8 MB). The only network
 request is the astronomy-engine script (star field and out-of-span fallback). The page uses system fonts.
 

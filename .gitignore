@@ -8,3 +8,4 @@ tools/ephem/kernels/
 
 # built by `npm run build` (Cloudflare Pages runs it on deploy)
 dist/
+backup/

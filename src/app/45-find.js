@@ -3,10 +3,10 @@
    85 S) is evaluated for the operator's own landing date and surface stay, then filtered by ranges the user sets.
    Two derived scores, asked for by Sharif for preliminary filtering and for the general public, sum up the
    numbers below them; the numbers themselves stay available as sub-constraints for mission operators:
-     Solar availability = 100 x mean of [ mean irradiance / mean full-disk irradiance,
+     Solar score = 100 x mean of [ mean irradiance / mean full-disk irradiance,
                                           lowest 24 h mean irradiance / mean full-disk irradiance,
                                           1 - longest darkness / stay length ]
-     Earth availability = 100 x mean of [ share of time with a link, 1 - longest outage / stay length ]
+     Earth score = 100 x mean of [ share of time with a link, 1 - longest outage / stay length ]
    Equal weights; each term is a fraction from 0 to 1 with a physical meaning, so a score of 100 means full Sun
    (or link) all the time. "Full-disk irradiance" is 1361 W/m2 x (1 au / Sun distance)^2 averaged over the stay, so
    the first two terms are independent of the season's Sun distance. A sub-constraint that is set freezes its score.
@@ -16,16 +16,16 @@ var FIND = { ready: false, loading: false, fail: false, geos: null, xy: null, ma
   lim: {}, dom: {}, sortK: 'sol', sortDir: -1, hashG: '', rows: 'pass', filt: '', showAll: false };
 function f1(v) { return v.toFixed(1); }
 var CONS = [
-  { k: 'sol', name: 'Solar availability', unit: 'score', max: true, fmt: function (v) { return Math.round(v) + ''; }, subs: ['irr', 'day', 'dark'], learn: 'southpole',
+  { k: 'sol', name: 'Solar score', unit: 'score', max: true, fmt: function (v) { return Math.round(v) + ''; }, subs: ['irr', 'day', 'dark'],
     about: 'Sunlight over the stay, 0 to 100: average of the share of full sunlight received, the share in the worst 24 h, and the share of the stay not spent in the longest darkness.' },
   { k: 'irr', name: 'Mean irradiance', unit: 'W/m²', max: true, fmt: function (v) { return Math.round(v) + ''; }, parent: 'sol' },
   { k: 'day', name: 'Lowest 24 h mean irradiance', unit: 'W/m²', max: true, fmt: function (v) { return Math.round(v) + ''; }, parent: 'sol' },
   { k: 'dark', name: 'Longest darkness', unit: 'h', max: false, fmt: f1, parent: 'sol' },
-  { k: 'ear', name: 'Earth availability', unit: 'score', max: true, fmt: function (v) { return Math.round(v) + ''; }, subs: ['earth', 'out'], learn: 'dsn',
+  { k: 'ear', name: 'Earth score', unit: 'score', max: true, fmt: function (v) { return Math.round(v) + ''; }, subs: ['earth', 'out'],
     about: 'Contact with Earth over the stay, 0 to 100: average of the share of time with a link and the share of the stay not spent in the longest outage.' },
   { k: 'earth', name: 'Earth link', unit: '% of time', max: true, fmt: function (v) { return Math.round(v) + ''; }, parent: 'ear' },
   { k: 'out', name: 'Longest Earth-link outage', unit: 'h', max: false, fmt: f1, parent: 'ear' },
-  { k: 'slope', name: 'Slope', unit: '°', max: false, fmt: f1, about: 'LOLA slope: 5 m model over 10 m where a tile exists, else 20 m over 40 m. Not lander scale.' }
+  { k: 'slope', name: 'Slope', unit: '°', max: false, fmt: f1, about: 'How steep the ground is at the point, from LOLA laser altimetry, measured across 10 m (40 m where no 5 m terrain map exists). Rocks and craters smaller than that are not seen.' }
 ];
 var CBY = {}; CONS.forEach(function (c) { CBY[c.k] = c; });
 function solScore(m) { var F = m.irrFullAvg || 1361; return 100 * (Math.min(1, m.irrAvg / F) + Math.min(1, m.irrDayMin / F) + Math.max(0, 1 - m.darkMaxH / m.periodH)) / 3; }
@@ -175,10 +175,13 @@ $('fLimEdit').addEventListener('click', function () {
 $('fLinkMin').addEventListener('change', function () { var v = parseFloat(this.value); S.linkMin = clamp(isFinite(v) ? v : 0, 0, 60); this.value = S.linkMin; $('linkMin').value = S.linkMin; recompute(false); findCompute(); });
 $('fGround').addEventListener('change', function () { S.ground = this.checked; $('ground').checked = S.ground; recompute(true); });
 
+var AREA0 = [85, 90, 0, 360]; // the survey's own extent: the default area
 function readArea() {
   function num(id) { var v = parseFloat($(id).value); return isFinite(v) ? v : null; }
   var a = { la0: num('fLat0'), la1: num('fLat1'), lo0: num('fLon0'), lo1: num('fLon1') };
-  a.active = a.la0 !== null || a.la1 !== null || (a.lo0 !== null && a.lo1 !== null);
+  var lo = a.la0 !== null && a.la1 !== null ? Math.min(a.la0, a.la1) : a.la0, hi = a.la0 !== null && a.la1 !== null ? Math.max(a.la0, a.la1) : a.la1;
+  var fullLon = a.lo0 === null || a.lo1 === null || (((a.lo1 - a.lo0) % 360 + 360) % 360 || 360) === 360;
+  a.active = lo !== AREA0[0] || (hi !== null && hi < AREA0[1]) || !fullLon;
   return a;
 }
 function inArea(a, lat, lon) {
@@ -224,7 +227,7 @@ function findNote() {
   $('fSurveyNote').textContent = 'Period: ' + iso(M.t0).slice(0, 10) + ' to ' + iso(M.t0 + M.days * DAY).slice(0, 10) + ' UTC.';
   $('fNote').innerHTML = '<b>What the candidates are.</b> ' + SURVEY.pts.length.toLocaleString('en-US') + ' points, one per ' + m.cell_km + ' km cell from 85°S to the pole, each placed on the cell\'s brightest pixel in the PGDA 18.6-year average-visibility map. That map only chooses where the point sits. Every number here is computed for your dates from the point\'s own LOLA horizon mask (' + m.hobs_m + ' m observer, ' + m.nb + ' azimuth bins), sampled every ' + M.stepMin + ' min' + (FIND.fallback ? ', <b>with the fallback ephemeris for part of the period</b>' : '') + '. ' +
     'Irradiance is on a Sun-facing surface: 1361 W/m² at 1 au, scaled by the Sun\'s distance and the visible fraction of its disk. Slope is from the 5 m model over a 10 m baseline where a 5 m tile exists, otherwise from the 20 m mosaic over 40 m. ' + esc(linkRuleText()) + ' ' +
-    '<b>The two scores.</b> Solar availability = 100 × the average of three fractions: mean irradiance ÷ mean full-disk irradiance, lowest 24 h mean ÷ mean full-disk irradiance, and 1 − longest darkness ÷ stay length. Earth availability = 100 × the average of the share of time with a link and 1 − longest outage ÷ stay length. Equal weights, no other input: they are a summary for a first cut, not a judgement of a site; the numbers under them are what a mission should check. ' +
+    '<b>The two scores.</b> Solar score = 100 × the average of three fractions: mean irradiance ÷ mean full-disk irradiance, lowest 24 h mean ÷ mean full-disk irradiance, and 1 − longest darkness ÷ stay length. Earth score = 100 × the average of the share of time with a link and 1 − longest outage ÷ stay length. Equal weights, no other input: they are a summary for a first cut, not a judgement of a site; the numbers under them are what a mission should check. ' +
     '<b>What this cannot tell you.</b> A 5 km cell holds better and worse ground than its one point, so an empty map means no <i>survey point</i> meets the ranges, not that no ground does. Elevation-model error is not quantified for survey points.';
 }
 function fmtLat(lat) { return Math.abs(lat).toFixed(3) + '°' + (lat < 0 ? 'S' : 'N'); }

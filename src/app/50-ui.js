@@ -151,7 +151,7 @@ function updateVerdict() {
   var vr = $('vReason'); vr.textContent = bad ? 'No terrain model for this point: nothing is reported.' : r.text; vr.className = 'msg ' + (bad ? 'stop' : r.openNow ? 'pick' : 'warn');
   var badge = $('vBadge');
   if (bad) { badge.hidden = false; badge.className = 'msg stop'; badge.textContent = 'No terrain for this point. Near the pole the Sun and Earth sit within a few degrees of the horizon, so a smooth sphere is not usable. Pick a point within 1 km of a listed south-pole site, take a candidate from the Site finder, or run the terrain helper (python tools/terrain/serve.py) and add the point again.'; }
-  else if (s.terr && s.terr.dem.length === 1) { badge.hidden = false; badge.className = 'msg warn'; badge.textContent = 'Horizon from the 240 m LOLA grid only: regional relief is included, nearby relief smaller than 240 m is not. Where the two could be compared, a 240 m horizon changed the sunlit share by up to 52 points (docs/validation.md).'; }
+  else if (s.terr && s.terr.dem.length === 1) { badge.hidden = false; badge.className = 'msg warn'; badge.textContent = 'Horizon from the 240 m LOLA grid only: regional relief is included, nearby relief smaller than 240 m is not. Where the two could be compared, a 240 m horizon changed the sunlit share by up to 52 points.'; }
   else if (!s.terr && Math.abs(s.lat) >= 60) { badge.hidden = false; badge.className = 'msg warn'; badge.textContent = 'High-latitude site without a terrain mask: real terrain can block the low Sun and Earth here. Treat these numbers as approximate.'; }
   else if (s.terr && maskHeight(s) !== S.hobs) { badge.hidden = false; badge.className = 'msg info'; badge.textContent = 'This point has no ' + S.hobs + ' m skyline, so the ' + maskHeight(s) + ' m one is used. Exact skylines at every height exist for the listed south-pole sites.'; }
   else badge.hidden = true;
@@ -284,7 +284,7 @@ document.addEventListener('click', function (e) { var b = e.target.closest('[dat
 function limSummary() {
   var pe = S.startMs + S.spanD * DAY;
   $('perSum').textContent = fmtDT(S.startMs).replace(/ \S+$/, '') + ' to ' + fmtDT(pe).replace(/ \S+$/, '') + ' ' + new Date(shiftTz(pe)).getUTCFullYear() + ', ' + tzLabel(S.startMs) + ' (' + S.spanD + ' days)';
-  $('fLim').innerHTML = limitsList().map(function (t) { return '<span class="chip">' + esc(t) + '</span>'; }).join('');
+  if ($('fLim')) $('fLim').innerHTML = limitsList().map(function (t) { return '<span class="chip">' + esc(t) + '</span>'; }).join('');
 }
 function redrawAll() {
   refreshData(true); kick();
@@ -418,7 +418,7 @@ function writeHash() {
   if (S.view !== 'site') h += '&v=' + S.view;
   if (S.skyMode !== 'sky') h += '&m=' + S.skyMode;
   if (S.atab !== 'skyline') h += '&p=' + S.atab;
-  ['a'].forEach(function (k) { var v = FIND_IDS[k].map(function (id) { return $(id).value; }).join(';'); if (v.replace(/;/g, '')) h += '&' + k + '=' + v; });
+  ['a'].forEach(function (k) { var v = FIND_IDS[k].map(function (id) { return $(id).value; }).join(';'); if (v.replace(/;/g, '') && v !== AREA0.join(';')) h += '&' + k + '=' + v; });
   var gh = FIND.dom.sol ? gHash() : FIND.hashG; if (gh) h += '&g=' + gh;
   if (S.view === 'find' && $('fStart').value) h += '&f=' + $('fStart').value + ';' + $('fDays').value;
   try { history.replaceState(null, '', '#' + h); } catch (x) {}

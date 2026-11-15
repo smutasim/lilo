@@ -297,7 +297,7 @@ NOTES = {
               'nearly constant and pointing at the Sun (cosine 0.999; tests/check_prop.js section H); LRO and Chandrayaan-2 '
               'show no such term. Its cause is not identified, so Danuri errors grow about 25 times faster than those of LRO.',
     'lro': 'The departure from 2026-12-10 13:00 UTC (1-4 km per hour for more than a day) is inside the Horizons '
-           'prediction and looks like planned manoeuvres; no force model reproduces it.',
+           'prediction and looks like planned maneuvers; no force model reproduces it.',
 }
 
 

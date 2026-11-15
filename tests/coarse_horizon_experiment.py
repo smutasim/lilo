@@ -5,7 +5,7 @@ a helper. This script measures what that would cost: at each curated site south 
 240 m grid alone is compared with the full-resolution mask (5 m + 20 m + 240 m), observer 2 m, and the share of
 2027 with any Sun visible is computed from both.
 
-Result (2026-11-10, recorded in docs/validation.md): errors of up to 52 percentage points, so the idea was
+Result (2026-11-10): errors of up to 52 percentage points, so the idea was
 dropped in favour of tools/terrain/serve.py, which computes full-resolution masks on demand.
 
 Usage: python tests/coarse_horizon_experiment.py     (needs data/raw)

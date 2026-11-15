@@ -6,9 +6,9 @@
      gravity_ref.json          GRGM1200A to degree 150 (data/gravity.json is the same file cut to the shipped degree)
      spice_ref.json            SPICE Earth/Sun from the Moon and the J2000 -> MOON_PA rotation at 49 epochs
    Output: tests/out/check_prop.json. Exit code 1 if a check misses its threshold (thresholds at the bottom, set from
-   the measured values of 2026-11-14 with margin; see docs/validation.md, sixth pass).
+   the measured values of 2026-11-14 with margin).
 
-   node tests/check_prop.js            full run (accuracy vs degree, truncation, manoeuvre scan; a few minutes)
+   node tests/check_prop.js            full run (accuracy vs degree, truncation, maneuver scan; a few minutes)
    node tests/check_prop.js --quick    unit checks, convergence and the default configuration only */
 'use strict';
 const fs = require('fs'), path = require('path');
@@ -124,7 +124,7 @@ function table(res, t) {
   return o;
 }
 function fmtRow(tab) { return Object.entries(tab).map(([k, e]) => k + ' ' + e.pos_km.toFixed(3) + (e.late_s === null ? '' : '/' + e.late_s.toFixed(2) + 's')).join('  '); }
-/* largest error in each day, to see where the truth departs (manoeuvres) */
+/* largest error in each day, to see where the truth departs (maneuvers) */
 function daily(res, t) {
   const o = [];
   for (let i = 0; i < t.n; i++) { const e = errAt(res, t, i); if (!e) continue; const d = Math.floor((t.t_ms[i] - t.t_ms[0]) / D); o[d] = Math.max(o[d] || 0, e.pos_km); }
@@ -240,7 +240,7 @@ for (const id of SATS) {
   }
 }
 
-/* ================= G. manoeuvre scan: one-hour arcs from every truth row ================= */
+/* ================= G. maneuver scan: one-hour arcs from every truth row ================= */
 out.arcs = {};
 if (!QUICK) {
   console.log('== G. one-hour arcs from each Horizons row (departures from ballistic motion)');

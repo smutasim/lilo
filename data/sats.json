@@ -25,7 +25,7 @@
    "lunar and Earth tides (no k2 tide)",
    "relativity",
    "thermal / outgassing forces",
-   "manoeuvres (station keeping, momentum unloads)"
+   "maneuvers (station keeping, momentum unloads)"
   ],
   "integrator": "Gragg-Bulirsch-Stoer, step and order control (Hairer, Norsett & Wanner), relative tolerance 1e-12 on position and velocity, landing on each output node",
   "degreeRule": [
@@ -139,7 +139,7 @@
      "resid_km": 13.495
     }
    },
-   "error_note": "Horizons trajectory departs from ballistic motion (1-h arc residual above 0.87 km) at 74 hourly rows, first 2026-12-10T12:59:59.999Z The departure from 2026-12-10 13:00 UTC (1-4 km per hour for more than a day) is inside the Horizons prediction and looks like planned manoeuvres; no force model reproduces it.",
+   "error_note": "Horizons trajectory departs from ballistic motion (1-h arc residual above 0.87 km) at 74 hourly rows, first 2026-12-10T12:59:59.999Z The departure from 2026-12-10 13:00 UTC (1-4 km per hour for more than a day) is inside the Horizons prediction and looks like planned maneuvers; no force model reproduces it.",
    "checked_days": 30,
    "check_text": "Against JPL Horizons from 2026-11-14: 0.02 km after 1 day, 0.98 km after 7 days (0.6 s along-track)",
    "default_on": true,

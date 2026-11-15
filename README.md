@@ -23,26 +23,34 @@ request is the astronomy-engine script (star field and out-of-span fallback). Th
 The page looks like desktop engineering software (tabs, bordered panels, data grids, status bar). One light look; only
 the sky viewport is dark.
 
-**Site analysis.** Left: panels for site, analysis period, constraints, satellites and ground stations. Centre: a
-viewport (Sky view with the LOLA skyline and the Sun and Earth as finite disks; Sky plot; Terrain 3D) and a timeline
-with rows for the Sun, the Earth, each shown satellite and "Constraints met" (3 to 120 days, default 30). Right:
+**Site analysis.** Left: panels for site, analysis period (start date and time, length 3 to 120 days or a custom
+1 to 365), constraints (array height 0, 2, 5, 10, 20, 50 or 100 m, each with its own exact LOLA skyline), satellites, ground stations and the observer on
+Earth. Centre: a viewport (Sky view with the LOLA skyline and the Sun and Earth as finite disks; Sky plot; Terrain 3D;
+From Earth) and a timeline with rows for the Sun, the Earth, each shown satellite and "Constraints met". Type a time
+(UTC or the observer's local time), play at 1 min/s to 4 days/s, step with the arrow keys, jump between windows. Right:
 status now (time to the next rise or set), statistics for the next 7, 14 or 30 days, and the windows that meet your
 constraints. Below: Skyline ("The skyline, all the way round"), Landing date, Maps, Terrain uncertainty, Model.
 
-**Compare sites.** All sites in one sortable table (19 cited sites plus your own: one at a time or a pasted list).
-Exports CSV.
+**From Earth** (for the public). The Moon in the sky of a place on Earth (Goldstone DSS-14 by default, or a city or
+postal code, or your location): its phase, the libration of that moment, the landing site on the disk, atmospheric
+refraction, and whether a lander there could talk to that place now. Moon position checked against JPL Horizons
+(`tests/validate_fromearth.py`, 0.0005 deg).
 
-**Site finder.** Enter a landing date, surface stay, an area and goals (mean irradiance, lowest 24 h mean
-irradiance, longest darkness, Earth link, longest outage, slope). The page evaluates 3,600 real LOLA horizons from
-85 S to the pole, shows which goal removes how many, and shrinks the map to the points left. "Open in Site view" opens
-a candidate.
+**Compare sites.** All sites in one sortable table (19 cited sites plus your own: one at a time or a pasted list).
+Tick two to compare them side by side for one day. Exports CSV.
+
+**Site finder.** Enter a landing date, surface stay and an area. Filter first on two derived scores (Solar score and
+Earth score, 0 to 100, defined in the Method tab), then on their parts (mean irradiance, lowest 24 h mean, longest
+darkness, Earth link, longest outage) and slope, each with a two-ended slider or typed limits; setting a part freezes
+its score. The page evaluates 3,600 real LOLA horizons from 85 S to the pole, shows which range removes how many, and
+lists the candidates in a sortable, filterable table shaded from worst to best. "Open in Site view" opens a candidate.
 
 **Method.** Models, sources and checks, including orbit propagation error against JPL Horizons.
 
 ## What is different: satellites with validated propagation
 
 Real lunar orbiters are propagated numerically (`src/prop.js`: GRAIL GRGM1200A gravity, Earth and Sun as third
-bodies), checked against JPL Horizons and SPICE (`tests/check_prop.js`, `docs/validation.md`, sixth pass).
+bodies), checked against JPL Horizons and SPICE (`tests/check_prop.js`).
 `data/sats.json` is a built-in catalogue (LRO, Danuri, Chandrayaan-2, ARTEMIS-P1 and -P2): one Horizons state each
 at a stated epoch, with the measured error against Horizons. You can also enter a state vector (full force model or
 two-body) or paste a Horizons vector table.
@@ -75,17 +83,17 @@ that built the shipped masks. The page also finds it when opened from a file. It
 | Part | Source |
 | --- | --- |
 | Sun, Earth | SPICE, DE440 (`de440s.bsp`), apparent `LT+S`, frame `MOON_ME` (`moon_pa_de440_200625.bpc`, `moon_de440_250416.tf`), 2 h grid 2026-09-01 to 2030-01-01, Catmull-Rom interpolation in the browser; outside that span astronomy-engine + IAU rotation model, with a badge |
-| Terrain | PGDA LOLA 5 m site tiles and 20 m polar mosaic (Barker et al. 2021), PDS LDEM_60S_240M. Rays to 55 km plus a 3D scatter of every pixel to 400 km. 1440 azimuth bins, 0.01 deg |
+| Terrain | PGDA LOLA 5 m site tiles and 20 m polar mosaic (Barker et al. 2021), PDS LDEM_60S_240M. Rays to 55 km plus a 3D scatter of every pixel to 400 km. 1440 azimuth bins, 0.01 deg; observer 0, 2, 5, 10, 20, 50 or 100 m, one exact mask per height |
 | Disks | Sun radius 695,700 km, Earth 6,378 km, at the actual distance |
 | Irradiance | IAU 2015 Resolution B3 nominal total solar irradiance, 1361 W/m2 at 1 au, x (1 au / distance)^2 x visible fraction of a uniform disk, on a Sun-facing surface |
 | Finder survey | one horizon mask per 5.04 km cell from 85 S to the pole, at the cell's brightest pixel of PGDA AVGVISIB_85S_060M; 720 bins, 2 m observer (`data/survey.json`) |
-| Satellite orbits | `src/prop.js`: GRGM1200A gravity (degree 60, 30, 16 or 8 by periapsis altitude), Earth and Sun point masses (DE440 GM), Adams-Bashforth-Moulton integrator; state from JPL Horizons. Details and errors: `docs/validation.md`, sixth pass |
+| Satellite orbits | `src/prop.js`: GRGM1200A gravity (degree 60, 30, 16 or 8 by periapsis altitude), Earth and Sun point masses (DE440 GM), Adams-Bashforth-Moulton integrator; state from JPL Horizons. Checked by `tests/check_prop.js` |
 | Events | 10-min samples, edges bisected to 1 s |
 | Uncertainty | horizons recomputed on PGDA LOLA error clones 0001-0016 (Barker et al. 2021); min and max reported |
 | Ground stations | DSS-14, DSS-43, DSS-63 and the 10.0 deg generic transmit limit from DSN 810-005, Module 301, Rev. N |
 
-Validation against JPL Horizons, Barker et al. 2021 and the PGDA illumination maps: `docs/validation.md`.
-Limits and the roadmap: `CLAUDE.md`. Not modelled: electrical power, thermal limits, link budgets, GNSS geometry, manoeuvres, terrain north of 60 S (smooth sphere), rocks and craters below the grid spacing. Nothing here is flight-grade.
+Validation against JPL Horizons, Barker et al. 2021 and the PGDA illumination maps: `tests/validate_*.py`, `tests/check_*.js` (`npm test`).
+Not modelled: electrical power, thermal limits, link budgets, GNSS geometry, maneuvers, terrain north of 60 S (smooth sphere), rocks and craters below the grid spacing. Nothing here is flight-grade.
 
 ## Build and test
 
@@ -100,6 +108,7 @@ python -m venv .venv && .venv/Scripts/python -m pip install -r requirements.txt 
 .venv/Scripts/python -m playwright install chromium
 npm run test:ui                  # click-through + screenshots in tests/out (tests/screenshot.py)
 npm run validate:horizons        # network
+npm run validate:fromearth       # network; Moon from DSS-14 against Horizons (build first)
 npm run validate:illumination    # needs data/raw
 ```
 
@@ -140,8 +149,15 @@ tests/                   check_core.js, check_prop.js, check_comms.py, screensho
 backup/                  pre-redesign sources of 2026-11-14 (not in git)
 ```
 
+## Licence
+
+Apache License 2.0 (`LICENSE`, `NOTICE`), as the NASA Space Apps terms provide for original content. Third-party
+software, data and services keep their own licences: `THIRD_PARTY_NOTICES.md`.
+
 ## Credits
 
 LOLA: Smith et al. (PDS LRO-L-LOLA-4-GDR-V1.0); Barker et al. 2021, Planet. Space Sci. 203, 105119;
 Mazarico et al. 2011, Icarus 211, 1066. Solar constants: IAU 2015 Resolution B3 (arXiv:1510.07674). Ground stations: DSN 810-005, Module 301, Rev. N. Ephemerides and kernels: JPL / NAIF. Site coordinates: LROC, NASA and the
 papers cited in `data/sites.json`. Hipparcos via d3-celestial; Natural Earth via world-atlas; astronomy-engine.
+Place search by Open-Meteo.com (CC BY 4.0), location data based on GeoNames. Air mass: Kasten and Young 1989 (display
+only). Refraction: Saemundsson formula as given by Meeus, via astronomy-engine.

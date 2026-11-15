@@ -9,7 +9,7 @@
    lunar frame kernel. s_k: Earth and Sun from the Moon's centre, geometric, from astronomy-engine.
 
    Left out: solar radiation pressure, other planets, the Earth's oblateness, lunar and terrestrial tides (the field's
-   label gives k2 but no tide model is applied), relativity, thermal and outgassing forces, and manoeuvres.
+   label gives k2 but no tide model is applied), relativity, thermal and outgassing forces, and maneuvers.
 
    Integrator: by default Adams-Bashforth-Moulton (PECE, order 8, fixed step), started by the Gragg-Bulirsch-Stoer
    integrator described next, which is also the reference in the checks (opts.integrator = 'gbs' selects it).
@@ -378,7 +378,7 @@ function outputStep(r, v, interpKm) {
 }
 
 /* Default degree by osculating periapsis altitude at the epoch (info.degreeRule). Chosen from the truncation study in
-   tests/check_prop.js (each degree against degree 100, docs/validation.md sixth pass): below 150 km, degree 60 keeps the
+   tests/check_prop.js (each degree against degree 100): below 150 km, degree 60 keeps the
    truncation error at 7 days (0.06-1.6 km) at or below the error against Horizons, where degree 40 gives 0.3-5 km;
    the eccentric ARTEMIS orbits (periapsis 230-1100 km) need 16-30, CAPSTONE (NRHO) 8. Band 150-400 km for a near-
    circular orbit is not covered by any test spacecraft; 30 there is an interpolation, not a measurement. */
@@ -410,7 +410,7 @@ function periRate(r, v) {
 }
 /* ABM step = hScale / (periapsis angular rate), hScale = min(0.05, 0.9 / degree): a degree-N field varies N times
    faster along the track than the orbit, so the step shrinks with N. Order 8. Both chosen by the convergence scan
-   recorded in docs/validation.md (sixth pass) and re-checked for every default configuration by tests/check_prop.js. */
+   checked for every default configuration by tests/check_prop.js. */
 var ORDER = 8;
 function hScaleFor(N) { return Math.min(0.05, 0.9 / Math.max(N, 1)); }
 function start(o) {
@@ -504,7 +504,7 @@ function at(res, ms, out) {
 var info = {
   summary: 'Numerical propagation with the GRAIL GRGM1200A lunar gravity field (degree and order 60 for periapsis below 150 km, '
     + '30 below 400 km, 16 below 1500 km, 8 above), Earth and Sun as point-mass third bodies (DE440 masses, astronomy-engine '
-    + 'positions); solar radiation pressure, other planets, tides, relativity and manoeuvres are not modelled.',
+    + 'positions); solar radiation pressure, other planets, tides, relativity and maneuvers are not modelled.',
   frame: 'Moon-centred ICRF (J2000 Earth-equator axes); km, km/s; time UTC ms',
   gravity: {
     model: 'GRGM1200A (GRAIL, NASA GSFC), PDS GRAIL-L-LGRS-5-RDR-V1.0 GGGRX_1200A_SHA.TAB, fully normalised, principal-axis frame',
@@ -519,7 +519,7 @@ var info = {
     + 'moon_de440_250416.tf (67.8526", 78.6944", 0.2785", axes 3-2-1)',
   time: 'TT = UTC + 69.184 s from 2017-01-01 (naif0012.tls); before 2017 astronomy-engine\'s Delta-T model',
   leftOut: ['solar radiation pressure', 'other planets', 'Earth oblateness', 'lunar and Earth tides (no k2 tide)',
-    'relativity', 'thermal / outgassing forces', 'manoeuvres (station keeping, momentum unloads)'],
+    'relativity', 'thermal / outgassing forces', 'maneuvers (station keeping, momentum unloads)'],
   integrator: 'Adams-Bashforth-Moulton (PECE, order 8, fixed step set from the periapsis angular rate and the gravity '
     + 'degree), started by Gragg-Bulirsch-Stoer; Gragg-Bulirsch-Stoer with step and order control (Hairer, Norsett & '
     + 'Wanner, relative tolerance 1e-12) is the reference integrator in the checks and is selectable',

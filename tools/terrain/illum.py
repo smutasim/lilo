@@ -1,6 +1,6 @@
 """Illumination from a horizon mask: SPICE Sun/Earth vectors in MOON_ME and visible-disk fractions.
 
-The disk-fraction rule is the same one src/core.js uses (CLAUDE.md P1.4): cut the disk into vertical chords,
+The disk-fraction rule is the same one src/core.js uses: cut the disk into vertical chords,
 look up the mask at each chord's azimuth, and sum the visible part of every chord.
 """
 import os, sys

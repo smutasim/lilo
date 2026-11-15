@@ -12,7 +12,7 @@
             <td class="wrap">JPL DE440 through SPICE. Against the JPL Horizons System at 4 sites and 6 epochs in 2027 the largest difference in azimuth or elevation is 0.00002&deg; (0.0029&deg; on the fallback path).</td></tr>
           <tr><td>Terrain</td>
             <td class="wrap">LOLA elevation models turned into 3D horizon masks with curvature, 1,440 azimuth bins, observer 0, 2, 5, 10, 20, 50 or 100 m above the ground, each height with its own mask computed the same way (no interpolation; tools/terrain/add_heights.py rebuilds the 2 m mask identically as a check). Points from the Site finder have a 2 m mask only, and the page says when it uses another height. Ground heights are above the 1737.4 km reference sphere (the LOLA datum). Sites north of 60&deg;S have no terrain and use a smooth sphere.</td>
-            <td class="wrap">5 m site tiles and 20 m polar mosaic from NASA GSFC PGDA (Barker et al. 2021), 240 m grid from PDS (LRO-L-LOLA-4-GDR-V1.0; Smith et al.). Average illumination compared with Mazarico et al. 2011 and the PGDA products (docs/validation.md).</td></tr>
+            <td class="wrap">5 m site tiles and 20 m polar mosaic from NASA GSFC PGDA (Barker et al. 2021), 240 m grid from PDS (LRO-L-LOLA-4-GDR-V1.0; Smith et al.). Average illumination compared with Mazarico et al. 2011 and the PGDA products.</td></tr>
           <tr><td>Terrain uncertainty</td>
             <td class="wrap">Where PGDA publishes error clones of the 5 m model, the page states the ground-height and skyline-edge scatter (one standard deviation across 16 clones) in plain terms, and the headline numbers are recomputed on the clones with the lowest and highest results shown. The range covers elevation-model error only and is not a confidence interval. Elsewhere terrain error is not quantified, and the page says so.</td>
             <td class="wrap">Barker et al. 2021 clone elevation models.</td></tr>
@@ -30,15 +30,15 @@
             <td class="wrap" id="mPropSrc"></td></tr>
           <tr><td>Satellite passes</td>
             <td class="wrap">Rise and set against the LOLA skyline, scanned at 1/90 of the orbit period and bisected to 1 s. ICRF positions are turned into the Moon's body-fixed frame with the IAU rotation model. Link statistics sample a relay at the series step (10 min on the timeline, 1 h in the landing-date table and the finder), so passes shorter than that are under-sampled in the percentages; the timeline row and the rise and set times are exact.</td>
-            <td class="wrap">Two-body and Horizons-table paths checked against Horizons LRO tables (docs/validation.md, fifth pass).</td></tr>
+            <td class="wrap">Two-body and Horizons-table paths checked against Horizons LRO tables.</td></tr>
           <tr><td>Imagery and 3D terrain</td>
             <td class="wrap">Display only: no number comes from them. South-pole maps show the LROC WAC south-pole summer mosaic (images of 21 September to 23 October 2010; its shadows are those dates'). The 3D view draws a 24 km square of LOLA heights at 100 m (29 km at 240 m north of 80.6&deg;S), true to scale with curvature.</td>
             <td class="wrap">WAC_ROI_SOUTH_SUMMER_100M (Speyerer et al. 2020), PDS LROC node. Registered to the LOLA grid within one 240 m pixel (correlation 0.884, best match at zero shift).</td></tr>
           <tr><td>Site finder</td>
-            <td class="wrap">Every one of 3,600 precomputed horizons (one per 5.04 km cell from 85&deg;S to the pole, at the brightest pixel of the PGDA average-visibility map) is evaluated over the stay; nothing is sampled at random. Two derived scores for a first cut (requested for general users): <b>Solar availability</b> = 100 &times; the mean of (mean irradiance &divide; mean full-disk irradiance, lowest 24 h mean &divide; mean full-disk irradiance, 1 &minus; longest darkness &divide; stay); <b>Earth availability</b> = 100 &times; the mean of (share of time with a link, 1 &minus; longest outage &divide; stay). Equal weights. Each part can be constrained on its own; setting a part freezes its score at its current range.</td>
-            <td class="wrap">Survey sunlit share compared with the PGDA average-visibility value at each point (docs/validation.md).</td></tr>
+            <td class="wrap">Every one of 3,600 precomputed horizons (one per 5.04 km cell from 85&deg;S to the pole, at the brightest pixel of the PGDA average-visibility map) is evaluated over the stay; nothing is sampled at random. Two derived scores for a first cut (requested for general users): <b>Solar score</b> = 100 &times; the mean of (mean irradiance &divide; mean full-disk irradiance, lowest 24 h mean &divide; mean full-disk irradiance, 1 &minus; longest darkness &divide; stay); <b>Earth score</b> = 100 &times; the mean of (share of time with a link, 1 &minus; longest outage &divide; stay). Equal weights. Each part can be constrained on its own; setting a part freezes its score at its current range.</td>
+            <td class="wrap">Survey sunlit share compared with the PGDA average-visibility value at each point.</td></tr>
           <tr><td>Not modelled</td>
-            <td class="wrap" colspan="2">Electrical power; thermal limits; rocks, craters and slopes below the LOLA grid spacing (slope is reported at 10 m and 40 m baselines only); terrain north of 60&deg;S; satellite manoeuvres; navigation (GNSS geometry).</td></tr>
+            <td class="wrap" colspan="2">Electrical power; thermal limits; rocks, craters and slopes below the LOLA grid spacing (slope is reported at 10 m and 40 m baselines only); terrain north of 60&deg;S; satellite maneuvers; navigation (GNSS geometry).</td></tr>
         </table>
         </div>
       </div>

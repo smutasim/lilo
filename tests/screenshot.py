@@ -318,7 +318,7 @@ try:
         pg.fill('#fStart', '2027-03-05'); pg.dispatch_event('#fStart', 'change')
         pg.wait_for_function('window.LWB_FIND_MS > 0 && document.querySelectorAll("#funnel li").length > 0', timeout=180000); pg.wait_for_timeout(800)
         print('survey evaluated; funnel:', txt(pg, '#funnel'))
-        print('survey note:', txt(pg, '#fSurveyNote'), '| constraints in use:', txt(pg, '#fLim'))
+        print('survey note:', txt(pg, '#fSurveyNote'), '| area:', [pg.input_value(i) for i in ('#fLat0', '#fLat1', '#fLon0', '#fLon1')])
         pg.screenshot(path=out + '/d8_find.png', full_page=True)
         # ranges (2026-11-15 finder): parts of the scores open under "Set the parts"
         pg.click('.cons[data-k="sol"] details > summary'); pg.click('.cons[data-k="ear"] details > summary')

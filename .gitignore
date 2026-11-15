@@ -9,3 +9,19 @@ tools/ephem/kernels/
 # built by `npm run build` (Cloudflare Pages runs it on deploy)
 dist/
 backup/
+
+# private: project notes, docs (rules, grading, validation record, write-up) and deploy commands
+CLAUDE.md
+docs/
+local/
+
+# local tooling, editors, OS and secrets
+.claude/
+.vscode/
+.idea/
+*.log
+.env
+.env.*
+Thumbs.db
+.DS_Store
+*.tmp

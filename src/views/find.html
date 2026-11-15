@@ -11,12 +11,12 @@
               <div class="field"><label for="fDays">Surface days</label><input id="fDays" type="number" min="1" max="180" step="1" value="30"></div>
             </div>
             <div class="row2">
-              <div class="field"><label for="fLat0">Latitude from (&deg;S)</label><input id="fLat0" type="number" min="82.5" max="90" step="0.1" placeholder="any"></div>
-              <div class="field"><label for="fLat1">to (&deg;S)</label><input id="fLat1" type="number" min="82.5" max="90" step="0.1" placeholder="any"></div>
+              <div class="field"><label for="fLat0">Latitude from (&deg;S)</label><input id="fLat0" type="number" min="82.9" max="90" step="0.1" value="85"></div>
+              <div class="field"><label for="fLat1">to (&deg;S)</label><input id="fLat1" type="number" min="82.9" max="90" step="0.1" value="90"></div>
             </div>
             <div class="row2">
-              <div class="field"><label for="fLon0">Longitude from (&deg;E)</label><input id="fLon0" type="number" min="-180" max="360" step="1" placeholder="any"></div>
-              <div class="field"><label for="fLon1">to (&deg;E, eastward)</label><input id="fLon1" type="number" min="-180" max="360" step="1" placeholder="any"></div>
+              <div class="field"><label for="fLon0">Longitude from (&deg;E)</label><input id="fLon0" type="number" min="-180" max="360" step="1" value="0"></div>
+              <div class="field"><label for="fLon1">to (&deg;E, eastward)</label><input id="fLon1" type="number" min="-180" max="360" step="1" value="360"></div>
             </div>
             <p class="hint" id="fSurveyNote"></p>
           </div>
@@ -25,8 +25,7 @@
         <section class="panel" aria-labelledby="fGoalH">
           <div class="panel-h"><h2 id="fGoalH">What the stay must achieve</h2><span class="sp"></span><button id="fReset" type="button" title="Clear every range">Clear all</button></div>
           <div class="panel-b">
-            <div class="btnrow"><span class="hint">When a moment counts</span><button id="fLimEdit" type="button" aria-expanded="false" aria-controls="fLimEd">Change</button></div>
-            <div class="chips" id="fLim"></div>
+            <div class="btnrow"><button id="fLimEdit" type="button" aria-expanded="false" aria-controls="fLimEd">Earth link settings</button></div>
             <div class="limedit" id="fLimEd" hidden>
               <div class="row2">
                 <div class="field"><label for="fLinkMin">Earth above the skyline by (&deg;)</label><input id="fLinkMin" type="number" step="0.5" min="0" max="60"></div>
@@ -34,7 +33,6 @@
               </div>
               <p class="hint">The same settings as in Site analysis; changing them here changes them there. Relay satellites and ground stations are chosen in Site analysis. In the finder the Sun counts when any part of its disk is visible.</p>
             </div>
-            <p class="hint"><b>Start with the two scores</b> (everyone): each is 0 to 100 and sums up the solar or Earth-link numbers below it. <b>Then set the numbers themselves</b> (mission operators): open a score to set its parts. Setting a part freezes its score where it is. Drag either end of a bar or type a value; an empty or full-width range means no limit.</p>
             <div id="fCons"></div>
             <ul class="funnel" id="funnel"></ul>
           </div>

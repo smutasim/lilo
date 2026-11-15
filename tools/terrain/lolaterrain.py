@@ -10,7 +10,7 @@ and the PDS label, see tools/terrain/inspect_tif.py and data/raw/ldem_60s_240m.l
 
 Map convention: x = r sin(lon), y = r cos(lon), r = 2R tan(colat/2), lon east-positive.
 
-Horizon mask at an observer (CLAUDE.md P1.2). All angles are computed from 3D body-fixed vectors:
+Horizon mask at an observer. All angles are computed from 3D body-fixed vectors:
 elevation = angle between the vector observer->sample and the plane normal to the observer's radial "up";
 azimuth = bearing of that vector, clockwise from local north. Curvature is therefore included exactly.
 

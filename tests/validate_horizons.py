@@ -1,4 +1,4 @@
-"""Validate the app's Sun/Earth azimuth and elevation against JPL Horizons (CLAUDE.md P0.2).
+"""Validate the app's Sun/Earth azimuth and elevation against JPL Horizons.
 
 Horizons: observer table, CENTER='coord@301', COORD_TYPE='GEODETIC', SITE_COORD='E-lon,lat,alt_km',
 QUANTITIES='4' (apparent azimuth/elevation), APPARENT='AIRLESS'. The response header reports

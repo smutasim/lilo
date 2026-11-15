@@ -1,4 +1,4 @@
-"""Validate terrain illumination against published LOLA results (CLAUDE.md P1.5).
+"""Validate terrain illumination against published LOLA results.
 
 A. Barker et al. 2021 (PSS 203, 105119), Table 2: Site 1 (Shackleton - de Gerlache connecting ridge),
    RoI centroids given as stereographic X/Y. Average visible fraction of the Sun's disk, hourly,

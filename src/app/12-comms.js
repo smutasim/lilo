@@ -350,7 +350,7 @@ var PROPQ = { timer: null, dirty: false };
 function propSpan(q) { return [S.startMs - DAY, S.startMs + (S.spanD + 1 + (q.relay ? EXTRA_D : 0)) * DAY]; }
 /* A built-in satellite is propagated on its own only while the timeline overlaps the span over which it was compared
    with Horizons (checked_days either side of its epoch). Farther away the orbit is an extrapolation past unknown
-   manoeuvres and costs a long integration, so the user has to ask for it. */
+   maneuvers and costs a long integration, so the user has to ask for it. */
 function propWanted(q) {
   if (!q.builtin || q.force || !q.cat.checked_days) return true;
   var lim = q.cat.checked_days * DAY, ep = +q.rec.epoch;
@@ -485,8 +485,8 @@ $('satForm').addEventListener('submit', function (e) {
 
 /* ---------- the Method view's satellite rows: written from the propagator's own description and the catalogue ---------- */
 function renderMethod() {
-  $('mProp').textContent = (PROP_OK ? propModelText() + ' ' : '') + 'A state vector can instead be moved as a two-body orbit about the Moon, or a JPL Horizons vector table can be pasted and is interpolated inside its span. Built-in satellites start from the JPL Horizons state at the epoch shown in the list; manoeuvres after that epoch are not known to the page.';
-  $('mPropSrc').textContent = 'Gravity field GRGM1200A (PDS GGGRX_1200A_SHA.TAB; GM and radius from its header). Earth and Sun GM from NAIF gm_de440.tpc. Field orientation: IAU rotation model plus the DE440 mean-Earth to principal-axis rotation (moon_de440_250416.tf), within 0.0039° of SPICE. Integration error under 3 m over 7 days. Checked against JPL Horizons: the table below and docs/validation.md, sixth pass (tests/check_prop.js).';
+  $('mProp').textContent = (PROP_OK ? propModelText() + ' ' : '') + 'A state vector can instead be moved as a two-body orbit about the Moon, or a JPL Horizons vector table can be pasted and is interpolated inside its span. Built-in satellites start from the JPL Horizons state at the epoch shown in the list; maneuvers after that epoch are not known to the page.';
+  $('mPropSrc').textContent = 'Gravity field GRGM1200A (PDS GGGRX_1200A_SHA.TAB; GM and radius from its header). Earth and Sun GM from NAIF gm_de440.tpc. Field orientation: IAU rotation model plus the DE440 mean-Earth to principal-axis rotation (moon_de440_250416.tf), within 0.0039° of SPICE. Integration error under 3 m over 7 days. Checked against JPL Horizons: the table below (tests/check_prop.js).';
   if (!SATCAT.length) return;
   function e(o, k, f) { return o && o[k] && isFinite(o[k][f]) ? o[k][f] : null; }
   function kmf(v) { return v === null ? '<td class="na">n/a</td>' : '<td>' + (v < 10 ? v.toFixed(2) : Math.round(v).toLocaleString('en-US')) + '</td>'; }

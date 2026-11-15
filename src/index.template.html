@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lunar Window Browser</title>
+<style>
+__CSS__
+</style>
+</head>
+<body>
+<header class="app-header">
+  <div class="titlebar">
+    <div class="brand"><span class="mark" aria-hidden="true"></span><h1>Lunar Window Browser</h1><span class="sub">Sun, Earth and satellite visibility from the lunar surface</span></div>
+    <span class="sp"></span>
+    <span class="clock" id="clock"></span>
+  </div>
+  <nav class="navbar views" role="tablist" aria-label="Views">
+    <button type="button" class="tab" role="tab" data-view="site" aria-selected="true">Site<span class="long"> analysis</span></button>
+    <button type="button" class="tab" role="tab" data-view="list" aria-selected="false">Compare<span class="long"> sites</span></button>
+    <button type="button" class="tab" role="tab" data-view="find" aria-selected="false"><span class="long">Site </span>Finder</button>
+    <span class="sp"></span>
+    <button type="button" class="tab" role="tab" data-view="method" aria-selected="false">Method</button>
+  </nav>
+</header>
+<p id="err" class="msg stop" hidden></p>
+<p id="busy" hidden>Computing geometry&hellip;</p>
+
+<!-- ============ view 1: one site ============ -->
+<div id="view-site">
+<div class="page">
+<div class="work">
+
+  <!-- scenario: what is being analysed -->
+  <div class="side">
+    <details class="panel" id="pSite" open>
+      <summary class="panel-h">Site</summary>
+      <div class="panel-b">
+        <select id="siteSel" aria-label="Site"></select>
+        <div class="sitemeta" id="vCoord"></div>
+        <p class="msg warn" id="vBadge" hidden></p>
+        <p class="msg info" id="vFallback" hidden></p>
+        <div class="btnrow"><button id="csvBtn" type="button" title="Windows, events and hourly geometry for this site, with every assumption written in the file">Export CSV</button><button id="shareBtn" type="button">Copy link</button><button id="removeSite" type="button" hidden>Remove site</button></div>
+      </div>
+    </details>
+
+    <details class="panel" id="pTime" open>
+      <summary class="panel-h">Analysis period</summary>
+      <div class="panel-b">
+        <div class="row2">
+          <div class="field"><label for="start">Start (UTC)</label><input id="start" type="date"></div>
+          <div class="field"><label for="span">Timeline length</label><select id="span"><option value="3">3 days</option><option value="14">14 days</option><option value="30" selected>30 days</option><option value="60">60 days</option><option value="120">120 days</option></select></div>
+        </div>
+        <div class="field"><label for="horizon">Statistics cover, from the current time</label>
+          <select id="horizon"><option value="7">7 days</option><option value="14">14 days</option><option value="30" selected>30 days</option></select></div>
+        <p class="hint" id="ephNote"></p>
+      </div>
+    </details>
+
+    <details class="panel" id="pLim" open>
+      <summary class="panel-h">Constraints</summary>
+      <div class="panel-b">
+        <div class="field"><label for="sunFrac">Sun counts when</label>
+          <select id="sunFrac"><option value="0" selected>any part of the disk is visible</option><option value="0.5">at least half the disk is visible</option><option value="1">the whole disk is visible</option></select></div>
+        <div class="row2">
+          <div class="field"><label for="sunMin">Sun elevation, min (&deg;)</label><input id="sunMin" type="number" step="0.5" min="-10" max="90" placeholder="none"></div>
+          <div class="field"><label for="linkMin">Earth above skyline (&deg;)</label><input id="linkMin" type="number" step="0.5" min="0" max="60" value="0"></div>
+        </div>
+        <div class="field"><label for="hobs">Antenna / array height above ground</label>
+          <select id="hobs"><option value="2" selected>2 m</option><option value="10">10 m</option></select></div>
+        <p class="hint">A moment meets the constraints when the Sun counts and there is a link to Earth, direct or through a relay satellite.</p>
+      </div>
+    </details>
+
+    <details class="panel" id="pSat" open>
+      <summary class="panel-h">Satellites</summary>
+      <div class="panel-b">
+        <div class="comlist" id="satList"></div>
+        <p class="hint" id="satNote"></p>
+        <details class="sub" id="satAdd"><summary>Add a satellite</summary>
+          <form id="satForm" class="comform">
+            <div class="field wide"><label for="satName">Name</label><input id="satName" type="text" maxlength="60" placeholder="e.g. relay, 12 h orbit"></div>
+            <div class="field wide"><label for="satKind">Orbit from</label><select id="satKind"><option value="num">State vector, full force model</option><option value="kep">State vector, two-body</option><option value="tab">JPL Horizons vector table</option></select></div>
+            <div class="kep comform-in">
+              <div class="field"><label for="satX">X (km)</label><input id="satX" type="number" step="any"></div>
+              <div class="field"><label for="satVX">VX (km/s)</label><input id="satVX" type="number" step="any"></div>
+              <div class="field"><label for="satY">Y (km)</label><input id="satY" type="number" step="any"></div>
+              <div class="field"><label for="satVY">VY (km/s)</label><input id="satVY" type="number" step="any"></div>
+              <div class="field"><label for="satZ">Z (km)</label><input id="satZ" type="number" step="any"></div>
+              <div class="field"><label for="satVZ">VZ (km/s)</label><input id="satVZ" type="number" step="any"></div>
+              <div class="field wide"><label for="satEpoch">Epoch (UTC)</label><input id="satEpoch" type="datetime-local" step="1"></div>
+              <div class="field wide"><label for="satFrame">Axes (Moon-centred)</label><select id="satFrame"><option value="icrf">ICRF / J2000 Earth equator</option><option value="moon">Moon equator and IAU node at the epoch</option></select></div>
+              <p class="hint wide" id="satKindNote"></p>
+            </div>
+            <div class="tab comform-in" hidden>
+              <div class="field wide"><label for="satTab">Horizons vector table</label><textarea id="satTab" rows="5" placeholder="Paste the whole Horizons output, header included"></textarea></div>
+              <p class="hint wide">Horizons settings: vector table, centre Moon (500@301), frame ICRF or ecliptic J2000. The satellite exists only inside the table's time span.</p>
+            </div>
+            <div class="field wide"><label for="satEl">Counts when above the skyline by at least (&deg;)</label><input id="satEl" type="number" step="0.5" min="0" max="90" value="0"></div>
+            <button type="submit" class="wide primary">Add satellite</button>
+            <p class="hint wide" id="satMsg" aria-live="polite"></p>
+          </form>
+        </details>
+      </div>
+    </details>
+
+    <details class="panel" id="pGs">
+      <summary class="panel-h">Ground stations</summary>
+      <div class="panel-b">
+        <label class="check"><input id="ground" type="checkbox"><span>A link needs a ticked station with the Moon (or the relay) above its elevation limit</span></label>
+        <div class="comlist" id="gsList"></div>
+        <details class="sub" id="gsAdd"><summary>Add a ground station</summary>
+          <form id="gsForm" class="comform">
+            <div class="field wide"><label for="gsName">Name</label><input id="gsName" type="text" maxlength="60" placeholder="e.g. 13 m dish"></div>
+            <div class="field"><label for="gsLat">Latitude (&deg;N)</label><input id="gsLat" type="number" step="any" min="-90" max="90" required></div>
+            <div class="field"><label for="gsLon">Longitude (&deg;E)</label><input id="gsLon" type="number" step="any" min="-180" max="360" required></div>
+            <div class="field"><label for="gsH">Height (m)</label><input id="gsH" type="number" step="any" value="0"></div>
+            <div class="field"><label for="gsEl">Elevation limit (&deg;)</label><input id="gsEl" type="number" step="0.5" min="-5" max="90" required></div>
+            <button type="submit" class="wide">Add station</button>
+          </form>
+        </details>
+        <p class="hint">DSN 70 m antennas and their 10.0&deg; transmit limit: DSN 810-005, Module 301. Station visibility is sampled every 30 min.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- what the lander sees, and when -->
+  <div class="main">
+    <section class="panel" aria-label="View from the site">
+      <div class="panel-h">
+        <div class="ptabs" role="tablist" aria-label="View">
+          <button type="button" role="tab" id="modeSky" aria-selected="true">Sky view</button>
+          <button type="button" role="tab" id="modePolar" aria-selected="false">Sky plot</button>
+          <button type="button" role="tab" id="mode3d" aria-selected="false">Terrain 3D</button>
+        </div>
+        <span class="sp"></span>
+        <span class="btnrow" id="lookGrp"><label>Look at</label><span class="seg" id="look" role="group" aria-label="Look at"></span>
+          <span class="seg"><button id="zoomOut" type="button" aria-label="Zoom out">&minus;</button><button id="zoomIn" type="button" aria-label="Zoom in">+</button></span>
+          <button id="optGrid" type="button" aria-pressed="false" title="Elevation and azimuth grid (display only)">Grid</button></span>
+        <span class="btnrow" id="polGrp" hidden><label>Scale</label><span class="seg" id="polZoom" role="group" aria-label="Scale"><button type="button" data-z="band" aria-pressed="true">Horizon band</button><button type="button" data-z="full" aria-pressed="false">Whole sky</button></span></span>
+        <span class="btnrow" id="t3Grp" hidden><label>Surface</label><span class="seg" id="t3Surf" role="group" aria-label="Surface"><button type="button" data-surf="sun" aria-pressed="true">Sunlight now</button><button type="button" data-surf="img" aria-pressed="false">LROC image</button></span>
+          <span class="seg"><button id="t3ZoomOut" type="button" aria-label="Zoom out">&minus;</button><button id="t3ZoomIn" type="button" aria-label="Zoom in">+</button></span></span>
+      </div>
+      <div class="panel-b flush">
+        <div class="hero">
+          <canvas id="sky" tabindex="0" role="img" aria-label="Sky at the landing site. Drag to look around. Click, then scroll or pinch to zoom."></canvas>
+          <canvas id="skyPolar" hidden role="img" aria-label="Sky plot: the skyline all the way round with the Sun, Earth and satellites"></canvas>
+          <canvas id="sky3d" hidden tabindex="0" role="img" aria-label="3D LOLA terrain around the site, lit by the Sun at the current time. Drag to turn."></canvas>
+          <span class="vstate" id="vState"></span>
+          <div class="vnote"><span id="skyNote"></span><span id="polarRead" hidden></span><span id="t3Read" hidden></span></div>
+        </div>
+        <div class="readout" id="hud" aria-live="off"></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Timeline">
+      <div class="panel-h"><h2>Timeline</h2><span class="meta" id="perSum"></span><span class="sp"></span>
+        <span class="legend">
+          <span><i class="sw" style="background:var(--disk)"></i>Sun</span>
+          <span><i class="sw" style="background:var(--earth)"></i>Earth</span>
+          <span><i class="sw" style="background:var(--relay)"></i>Satellite</span>
+          <span><i class="sw" style="background:var(--go)"></i>Constraints met</span>
+        </span>
+      </div>
+      <div class="panel-b flush">
+        <div class="tl-bar">
+          <button id="play" type="button" class="primary">Play</button>
+          <select id="speed" aria-label="Playback speed">
+            <option value="0.1">6 min/s</option><option value="1">1 h/s</option><option value="6" selected>6 h/s</option><option value="24">1 day/s</option><option value="96">4 days/s</option>
+          </select>
+          <span class="seg"><button id="prevWin" type="button" title="Previous time the constraints are met">&#9664; Window</button><button id="nextWin" type="button" title="Next time the constraints are met">Window &#9654;</button></span>
+          <span class="sp"></span>
+          <input id="tDate" type="date" aria-label="Go to a date (UTC)" title="Go to a date (UTC)">
+          <output id="tLabel" for="t"></output>
+        </div>
+        <input id="t" class="sr" type="range" min="0" max="100" step="1" value="0" aria-label="Time">
+        <canvas id="strip" aria-hidden="true"></canvas>
+      </div>
+    </section>
+  </div>
+
+  <!-- the numbers -->
+  <div class="report">
+    <section class="panel" aria-label="Status at the current time">
+      <div class="panel-h"><h2>Status</h2><span class="meta" id="vWhen"></span></div>
+      <div class="panel-b flush">
+        <p class="msg" id="vReason" aria-live="polite" style="border-width:0 0 1px;border-radius:0"></p>
+        <table class="kv" id="vNow"></table>
+      </div>
+    </section>
+    <section class="panel" aria-label="Statistics">
+      <div class="panel-h"><h2 id="vStatsH">Statistics</h2></div>
+      <div class="panel-b flush"><table class="kv" id="vStats"></table></div>
+    </section>
+    <section class="panel" aria-label="Windows that meet the constraints">
+      <div class="panel-h"><h2>Windows meeting the constraints</h2></div>
+      <div class="panel-b flush"><div class="tblwrap" style="max-height:230px;overflow-y:auto"><table class="cmp" id="vWins"></table></div></div>
+    </section>
+  </div>
+
+  <!-- analysis -->
+  <section class="panel lower" aria-label="Analysis">
+    <div class="panel-h">
+      <div class="ptabs" id="atabs" role="tablist" aria-label="Analysis">
+        <button type="button" role="tab" data-atab="skyline" aria-selected="true">Skyline</button>
+        <button type="button" role="tab" data-atab="slip" aria-selected="false">Landing date</button>
+        <button type="button" role="tab" data-atab="maps" aria-selected="false">Maps</button>
+        <button type="button" role="tab" data-atab="unc" aria-selected="false">Terrain uncertainty</button>
+        <button type="button" role="tab" data-atab="model" aria-selected="false">Model</button>
+      </div>
+    </div>
+    <div class="panel-b" data-atab="skyline">
+      <h3 id="hzH">The skyline, all the way round</h3>
+      <canvas id="hz" role="img" aria-label="Horizon elevation against azimuth with the paths of the Sun and Earth"></canvas>
+      <p id="hzRead"></p>
+      <div class="legend">
+        <span><i class="sw ln" style="color:var(--near)"></i>Skyline set by terrain within 5 km</span>
+        <span><i class="sw ln" style="color:var(--far)"></i>Skyline set by terrain farther away</span>
+        <span><i class="sw ln" style="color:var(--sun)"></i>Sun, next 29.5 days</span>
+        <span><i class="sw" style="background:rgba(233,162,27,.25)"></i>Sun's range over a year</span>
+        <span><i class="sw ln" style="color:var(--earth)"></i>Earth, next 29.5 days</span>
+      </div>
+      <p class="note" id="hzNote"></p>
+    </div>
+    <div class="panel-b" data-atab="slip" hidden>
+      <h3 id="slipH">If the landing date moves</h3>
+      <div class="tblwrap"><table class="cmp" id="slipTable"></table></div>
+      <canvas id="slip" role="img" aria-label="Mean irradiance, longest darkness and Earth link over the stay, against landing date"></canvas>
+      <p id="slipRead" class="hint"></p>
+      <p class="hint" id="slipNote"></p>
+    </div>
+    <div class="panel-b" data-atab="maps" hidden>
+      <div class="maps">
+        <div>
+          <div class="btnrow"><h3>South pole, 85&deg;S to the pole</h3><span style="flex:1"></span><label for="baseSite">Base</label><select id="baseSite" class="baseSel" style="width:auto"><option value="img">LROC image</option><option value="sun">Average sunlight</option></select></div>
+          <canvas id="polar" role="img" aria-label="Map of the lunar south pole with sites and the directions of the Sun and Earth"></canvas>
+          <div class="legend">
+            <span data-base="img">LROC WAC mosaic, Sep&ndash;Oct 2010; its shadows are those of the image dates</span>
+            <span data-base="sun" hidden>PGDA average sunlight over 18.6 years (amber from 26% to 46% and above) on LOLA relief</span>
+            <span><i class="sw o" style="background:#F2B24B"></i>Sun direction</span>
+            <span><i class="sw o" style="background:#6FB3F2"></i>Earth direction</span>
+            <span><i class="sw o" style="background:#47C98D"></i>Site, constraints met now</span>
+          </div>
+        </div>
+        <div>
+          <h3>Whole Moon</h3>
+          <canvas id="map" role="img" aria-label="Map of the Moon with sunlight, the Earth-visible limit and sites"></canvas>
+          <div class="legend">
+            <span>LROC WAC global mosaic</span>
+            <span><i class="sw" style="background:#0a0f1a"></i>Night side now</span>
+            <span><i class="sw ln" style="color:#6EB4F5"></i>Earth-visible limit</span>
+            <span><i class="sw o" style="background:#fff;border:1px solid #888"></i>Site (click to open)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel-b" data-atab="unc" hidden>
+      <p class="note" id="uHead"></p>
+      <div class="tblwrap"><table class="cmp" id="uTable"></table></div>
+      <p class="note" id="vTerrUnc"></p>
+    </div>
+    <div class="panel-b" data-atab="model" hidden>
+      <table class="kv" id="vWhy" style="max-width:900px"></table>
+      <p class="hint" id="vSrc"></p>
+      <p class="hint">Nothing here is flight-grade. Full description and sources: <button type="button" class="link" data-goto="method">Method</button>.</p>
+    </div>
+  </section>
+
+</div>
+</div>
+</div>
+
+__VIEW_FIND__
+__VIEW_COMPARE__
+__VIEW_METHOD__
+
+<footer class="statusbar" aria-label="Model status">
+  <span class="keep" id="sbEph"></span>
+  <span id="sbTerr"></span>
+  <span id="sbSat"></span>
+  <span class="sp" id="sbProp"></span>
+  <span class="keep">Not flight-grade</span>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
+<script type="application/json" id="skydata">__SKY__</script>
+<script type="application/json" id="ephemdata">__EPHEM__</script>
+<script type="application/json" id="terraindata">__TERRAIN__</script>
+<script type="application/json" id="sitedata">__SITES__</script>
+<script type="application/json" id="polardata">__POLAR__</script>
+<script type="application/json" id="clonedata">__CLONES__</script>
+<script type="application/json" id="surveydata">__SURVEY__</script>
+<script type="application/json" id="imagerydata">__IMAGERY__</script>
+<script type="application/json" id="t3ddata">__T3D__</script>
+<script type="application/json" id="globalimgdata">__GLOBALIMG__</script>
+<script type="application/json" id="gravitydata">__GRAVITY__</script>
+<script type="application/json" id="satdata">__SATS__</script>
+<script>
+__CORE__
+</script>
+<script>
+__PROP__
+</script>
+<script>
+(function () {
+'use strict';
+__APP__
+})();
+</script>
+</body>
+</html>

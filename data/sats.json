@@ -1,0 +1,1698 @@
+{
+ "generated_utc": "2026-11-15T03:04:18Z",
+ "source": "JPL Horizons API (https://ssd.jpl.nasa.gov/api/horizons.api), vector tables, CENTER=500@301, ICRF, KM-S",
+ "propagator": {
+  "frame": "Moon-centred ICRF (J2000 Earth-equator axes); km, km/s; time UTC ms",
+  "gravity": {
+   "model": "GRGM1200A (GRAIL, NASA GSFC), PDS GRAIL-L-LGRS-5-RDR-V1.0 GGGRX_1200A_SHA.TAB, fully normalised, principal-axis frame",
+   "gm_source": "header record of GGGRX_1200A_SHA.TAB",
+   "degree_available": 150,
+   "gm_km3_s2": 4902.8001224453,
+   "r_ref_km": 1738
+  },
+  "thirdBodies": {
+   "earth_gm_km3_s2": 398600.43550702266,
+   "sun_gm_km3_s2": 132712440041.27942,
+   "gm_source": "NAIF gm_de440.tpc (BODY399_GM, BODY10_GM; DE440 values, Park et al. 2021)",
+   "positions": "astronomy-engine 2.1.19 GeoMoon and HelioVector(Earth), geometric, on a 1 h grid with cubic interpolation"
+  },
+  "orientation": "IAU/WGCCRE 2009 lunar rotation model (astronomy-engine RotationAxis) then the constant ME->PA rotation of moon_de440_250416.tf (67.8526\", 78.6944\", 0.2785\", axes 3-2-1)",
+  "time": "TT = UTC + 69.184 s from 2017-01-01 (naif0012.tls); before 2017 astronomy-engine's Delta-T model",
+  "leftOut": [
+   "solar radiation pressure",
+   "other planets",
+   "Earth oblateness",
+   "lunar and Earth tides (no k2 tide)",
+   "relativity",
+   "thermal / outgassing forces",
+   "manoeuvres (station keeping, momentum unloads)"
+  ],
+  "integrator": "Gragg-Bulirsch-Stoer, step and order control (Hairer, Norsett & Wanner), relative tolerance 1e-12 on position and velocity, landing on each output node",
+  "degreeRule": [
+   [
+    150,
+    60
+   ],
+   [
+    400,
+    30
+   ],
+   [
+    1500,
+    16
+   ],
+   [
+    null,
+    8
+   ]
+  ]
+ },
+ "error_definition": {
+  "pos_km": "|r_propagated(t) - r_Horizons(t)|, Moon-centred ICRF",
+  "along_km": "component of that difference along the Horizons velocity (positive: propagated satellite ahead)",
+  "late_s": "tau minimising |r_propagated(t + tau) - r_Horizons(t)|: the propagated satellite passes the true position tau seconds later (negative: earlier)",
+  "resid_km": "the remaining (radial and cross-track) miss after that time shift"
+ },
+ "default_on_rule": "default_on for the two spacecraft whose Horizons trajectory covers 2026-11-14 and whose propagation holds best against it over 7 days (Chandrayaan-2 0.24 km, LRO 0.98 km)",
+ "sats": [
+  {
+   "id": "lro",
+   "name": "LRO",
+   "horizons_id": "-85",
+   "about": "NASA Lunar Reconnaissance Orbiter (launched 2009-06-18); per the Horizons header now in an extended mission as a communication relay and south-pole observer.",
+   "builtin": true,
+   "epoch_ms": 1794614400000.015,
+   "epoch_utc": "2026-11-14T00:00:00Z",
+   "r": [
+    -1649.578987332126,
+    -655.1668577019772,
+    417.0934292018363
+   ],
+   "v": [
+    -0.5089143303159916,
+    0.2431733328819963,
+    -1.542026414354146
+   ],
+   "frame": "Moon-centred ICRF (J2000 Earth-equator axes), km and km/s",
+   "osculating_at_epoch": {
+    "a_km": 1828.0042,
+    "e": 0.0126,
+    "peri_alt_km": 67.5175,
+    "apo_alt_km": 113.6908,
+    "period_h": 1.9481,
+    "inc_icrf_deg": 104.2046
+   },
+   "altitude_range_30d_km": [
+    63.3,
+    117.6
+   ],
+   "horizons": {
+    "target": "LRO (spacecraft) (-85)",
+    "solution": "LRO_merged",
+    "revised": "Oct 07, 2026",
+    "query_date": "Sat Nov 14 14:32:49 2026",
+    "trajectory": "Final reconstructed trajectory segments are from PDS. Preliminary \"tag-up\" \n solutions begin 2026-Jun-15, with prediction after 2026-Oct-06.\n\n Trajectory name Start (TDB) Stop (TDB)\n ---------------------------- ----------------- -----------------\n Reconstructed trajectory 2009-Jun-18 22:16 2026-Jun-15 00:01\n Concatenated predict updates 2026-Jun-15 00:01 2026-Oct-07 00:01\n 558day_20261007_01 2026-Oct-07 00:01 2028-Apr-16 23:59",
+    "truth_end_utc": "2026-12-13T23:59:59Z"
+   },
+   "default_degree": 60,
+   "error_vs_horizons": {
+    "1h": {
+     "pos_km": 0.016,
+     "along_km": 0.014,
+     "late_s": -0.01,
+     "resid_km": 0.006
+    },
+    "6h": {
+     "pos_km": 0.031,
+     "along_km": -0.028,
+     "late_s": 0.02,
+     "resid_km": 0.011
+    },
+    "1d": {
+     "pos_km": 0.017,
+     "along_km": 0.016,
+     "late_s": -0.01,
+     "resid_km": 0.005
+    },
+    "3d": {
+     "pos_km": 0.361,
+     "along_km": 0.359,
+     "late_s": -0.22,
+     "resid_km": 0.043
+    },
+    "7d": {
+     "pos_km": 0.981,
+     "along_km": 0.977,
+     "late_s": -0.6,
+     "resid_km": 0.089
+    },
+    "14d": {
+     "pos_km": 3.007,
+     "along_km": 3.004,
+     "late_s": -1.84,
+     "resid_km": 0.137
+    },
+    "30d": {
+     "pos_km": 140.62,
+     "along_km": -140.232,
+     "late_s": 86.09,
+     "resid_km": 13.495
+    }
+   },
+   "error_note": "Horizons trajectory departs from ballistic motion (1-h arc residual above 0.87 km) at 74 hourly rows, first 2026-12-10T12:59:59.999Z The departure from 2026-12-10 13:00 UTC (1-4 km per hour for more than a day) is inside the Horizons prediction and looks like planned manoeuvres; no force model reproduces it.",
+   "checked_days": 30,
+   "check_text": "Against JPL Horizons from 2026-11-14: 0.02 km after 1 day, 0.98 km after 7 days (0.6 s along-track)",
+   "default_on": true,
+   "error_tables": {
+    "now": {
+     "start_utc": "2026-11-14T00:00:00.000Z",
+     "end_utc": "2026-12-13T23:59:59.999Z",
+     "configs": {
+      "two-body": {
+       "degree": 0,
+       "wall_ms_per_30d": 10,
+       "evals_per_day": 3538,
+       "errors": {
+        "1h": {
+         "pos_km": 2.0055973166215053,
+         "along_km": 1.9190294150398597,
+         "late_s": -1.1739661309640725,
+         "resid_km": 0.5819584862986292
+        },
+        "6h": {
+         "pos_km": 8.700178976453875,
+         "along_km": 8.614001954886417,
+         "late_s": -5.27893698635983,
+         "resid_km": 1.2311792833009292
+        },
+        "1d": {
+         "pos_km": 34.22936253698249,
+         "along_km": 34.222907518183135,
+         "late_s": -21.15883527895998,
+         "resid_km": 0.8524546325636605
+        },
+        "3d": {
+         "pos_km": 115.787341940314,
+         "along_km": 115.71803082231965,
+         "late_s": -70.29114943561903,
+         "resid_km": 6.39901843273514
+        },
+        "7d": {
+         "pos_km": 128.28970314100312,
+         "along_km": 121.7695881184742,
+         "late_s": -75.27234464093128,
+         "resid_km": 41.976878673291345
+        },
+        "14d": {
+         "pos_km": 258.13671989160383,
+         "along_km": 254.3862855189988,
+         "late_s": -157.17050729217237,
+         "resid_km": 37.90103627557007
+        },
+        "30d": {
+         "pos_km": 436.92266211192236,
+         "along_km": 422.21791405878616,
+         "late_s": -260.0503392006622,
+         "resid_km": 99.32328464898453
+        }
+       }
+      },
+      "default N=60": {
+       "degree": 60,
+       "wall_ms_per_30d": 4536,
+       "evals_per_day": 11472,
+       "errors": {
+        "1h": {
+         "pos_km": 0.015693506421342894,
+         "along_km": 0.014312419701993772,
+         "late_s": -0.008758088566796097,
+         "resid_km": 0.006437671496010866
+        },
+        "6h": {
+         "pos_km": 0.030551539045836646,
+         "along_km": -0.028409758784660736,
+         "late_s": 0.017404020306318713,
+         "resid_km": 0.011237913233093309
+        },
+        "1d": {
+         "pos_km": 0.016843233075516523,
+         "along_km": 0.016027147920433336,
+         "late_s": -0.009906068751938482,
+         "resid_km": 0.005179603093797303
+        },
+        "3d": {
+         "pos_km": 0.36148305661537455,
+         "along_km": 0.3589129819238464,
+         "late_s": -0.21704490746894042,
+         "resid_km": 0.043003084448837374
+        },
+        "7d": {
+         "pos_km": 0.980517208350343,
+         "along_km": 0.9765297034895122,
+         "late_s": -0.5980194797643776,
+         "resid_km": 0.08850640236346774
+        },
+        "14d": {
+         "pos_km": 3.0072056793773085,
+         "along_km": 3.0040111921581203,
+         "late_s": -1.84155610933646,
+         "resid_km": 0.13749885648723104
+        },
+        "30d": {
+         "pos_km": 140.6201362829058,
+         "along_km": -140.23246564693898,
+         "late_s": 86.08594376674544,
+         "resid_km": 13.495040478642261
+        }
+       }
+      }
+     }
+    },
+    "fit": {
+     "start_utc": "2026-05-01T00:00:00.000Z",
+     "end_utc": "2026-05-31T00:00:00.000Z",
+     "configs": {
+      "two-body": {
+       "degree": 0,
+       "wall_ms_per_30d": 7,
+       "evals_per_day": 3556,
+       "errors": {
+        "1h": {
+         "pos_km": 0.9533227137376026,
+         "along_km": 0.9507138886519718,
+         "late_s": -0.5895717389333449,
+         "resid_km": 0.07036627866032528
+        },
+        "6h": {
+         "pos_km": 5.428941854178539,
+         "along_km": 5.163929725415494,
+         "late_s": -3.108740115040355,
+         "resid_km": 1.6721637819943451
+        },
+        "1d": {
+         "pos_km": 25.02070347211415,
+         "along_km": 24.459638376639653,
+         "late_s": -15.00227792475479,
+         "resid_km": 5.447447036721915
+        },
+        "3d": {
+         "pos_km": 107.72111464702401,
+         "along_km": 107.32283067779589,
+         "late_s": -64.57092893427689,
+         "resid_km": 7.68175466875436
+        },
+        "7d": {
+         "pos_km": 182.0985015559849,
+         "along_km": 178.8859002574703,
+         "late_s": -109.16680043883072,
+         "resid_km": 36.81613601976356
+        },
+        "14d": {
+         "pos_km": 374.18215029566323,
+         "along_km": 373.1912710987805,
+         "late_s": -233.0371714848434,
+         "resid_km": 31.609171361779204
+        },
+        "30d": {
+         "pos_km": 845.8249645702789,
+         "along_km": 818.6050382378503,
+         "late_s": -524.4293501793483,
+         "resid_km": 11.106012941263238
+        }
+       }
+      },
+      "default N=60": {
+       "degree": 60,
+       "wall_ms_per_30d": 4556,
+       "evals_per_day": 11532,
+       "errors": {
+        "1h": {
+         "pos_km": 0.023821247672922843,
+         "along_km": -0.023542129382742503,
+         "late_s": 0.014601238858581637,
+         "resid_km": 0.0036351397109619745
+        },
+        "6h": {
+         "pos_km": 0.05054826342708866,
+         "along_km": 0.04253469180792789,
+         "late_s": -0.025592889559040048,
+         "resid_km": 0.02731189988841008
+        },
+        "1d": {
+         "pos_km": 0.06429380558343037,
+         "along_km": 0.03674519422320676,
+         "late_s": -0.02251457361240854,
+         "resid_km": 0.052757087103446676
+        },
+        "3d": {
+         "pos_km": 0.13450669226318956,
+         "along_km": -0.08792430100437822,
+         "late_s": 0.053027371922136676,
+         "resid_km": 0.10178662817464607
+        },
+        "7d": {
+         "pos_km": 0.519370350249952,
+         "along_km": -0.4945297039950678,
+         "late_s": 0.2997389192962357,
+         "resid_km": 0.15872929586797266
+        },
+        "14d": {
+         "pos_km": 2.773574774213338,
+         "along_km": -2.7718349167235874,
+         "late_s": 1.6980993470810855,
+         "resid_km": 0.10002879680944446
+        },
+        "30d": {
+         "pos_km": 10.512662381123787,
+         "along_km": -10.509767236836772,
+         "late_s": 6.519997596944039,
+         "resid_km": 0.21979778464558256
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "danuri",
+   "name": "Danuri (KPLO)",
+   "horizons_id": "-155",
+   "about": "Korea Pathfinder Lunar Orbiter, KARI (launched 2022-08-04, arrived 2022-12-16); trajectory from KARI solutions merged with a longer-term prediction.",
+   "builtin": true,
+   "epoch_ms": 1794614400000.015,
+   "epoch_utc": "2026-11-14T00:00:00Z",
+   "r": [
+    -713.338832309033,
+    1364.37037265324,
+    -960.5939116963127
+   ],
+   "v": [
+    0.8148120957948888,
+    -0.5719427055709995,
+    -1.337143608548319
+   ],
+   "frame": "Moon-centred ICRF (J2000 Earth-equator axes), km and km/s",
+   "osculating_at_epoch": {
+    "a_km": 1868.1123,
+    "e": 0.0383,
+    "peri_alt_km": 59.1545,
+    "apo_alt_km": 202.2702,
+    "period_h": 2.0126,
+    "inc_icrf_deg": 103.456
+   },
+   "altitude_range_30d_km": [
+    45.6,
+    216.4
+   ],
+   "horizons": {
+    "target": "Danuri (spacecraft) (-155)",
+    "solution": "KPLO_merged",
+    "revised": "Nov 10, 2026",
+    "query_date": "Sat Nov 14 14:32:52 2026",
+    "trajectory": "Post-launch trajectory segments from KARI, concatenated and then merged with \n a longer-term prediction. \n\n Tag-up w/data through November 10, prediction thereafter.\n\n Trajectory name Start (TDB) Stop (TDB)\n ---------------------------------------- ----------------- -----------------\n Concatenated trajectory solutions (1019) 2022-Aug-04 23:19 2027-Jun-03 08:36",
+    "truth_end_utc": "2026-12-13T23:59:59Z"
+   },
+   "default_degree": 60,
+   "error_vs_horizons": {
+    "1h": {
+     "pos_km": 0.159,
+     "along_km": -0.124,
+     "late_s": 0.08,
+     "resid_km": 0.1
+    },
+    "6h": {
+     "pos_km": 0.907,
+     "along_km": -0.907,
+     "late_s": 0.55,
+     "resid_km": 0.028
+    },
+    "1d": {
+     "pos_km": 3.551,
+     "along_km": -3.55,
+     "late_s": 2.16,
+     "resid_km": 0.092
+    },
+    "3d": {
+     "pos_km": 10.049,
+     "along_km": -10.045,
+     "late_s": 6.35,
+     "resid_km": 0.3
+    },
+    "7d": {
+     "pos_km": 25.733,
+     "along_km": -25.731,
+     "late_s": 16.32,
+     "resid_km": 0.471
+    },
+    "14d": {
+     "pos_km": 49.741,
+     "along_km": -49.734,
+     "late_s": 30.38,
+     "resid_km": 0.188
+    },
+    "30d": {
+     "pos_km": 93.686,
+     "along_km": -93.656,
+     "late_s": 60.27,
+     "resid_km": 0.128
+    }
+   },
+   "error_note": "The Horizons Danuri trajectory carries an acceleration of about 33 um/s^2 that the model does not have, nearly constant and pointing at the Sun (cosine 0.999; tests/check_prop.js section H); LRO and Chandrayaan-2 show no such term. Its cause is not identified, so Danuri errors grow about 25 times faster than those of LRO.",
+   "checked_days": 30,
+   "check_text": "Against JPL Horizons from 2026-11-14: 3.6 km after 1 day, 26 km after 7 days (16.3 s along-track)",
+   "default_on": false,
+   "error_tables": {
+    "now": {
+     "start_utc": "2026-11-14T00:00:00.000Z",
+     "end_utc": "2026-12-13T23:59:59.999Z",
+     "configs": {
+      "two-body": {
+       "degree": 0,
+       "wall_ms_per_30d": 8,
+       "evals_per_day": 3612,
+       "errors": {
+        "1h": {
+         "pos_km": 1.7731491170935887,
+         "along_km": 1.6872100350784256,
+         "late_s": -1.0724752235174264,
+         "resid_km": 0.5447402627405598
+        },
+        "6h": {
+         "pos_km": 5.454684645026091,
+         "along_km": 5.043232028509382,
+         "late_s": -3.0362175256197745,
+         "resid_km": 2.0804635838906664
+        },
+        "1d": {
+         "pos_km": 18.63865169691305,
+         "along_km": 18.284473388126617,
+         "late_s": -11.141493455308998,
+         "resid_km": 3.6629571364600917
+        },
+        "3d": {
+         "pos_km": 92.72316680762954,
+         "along_km": 91.58689698161794,
+         "late_s": -57.827399592557555,
+         "resid_km": 13.895996890650018
+        },
+        "7d": {
+         "pos_km": 176.46822581774256,
+         "along_km": 175.07363948183644,
+         "late_s": -111.00695928928279,
+         "resid_km": 14.664769142337702
+        },
+        "14d": {
+         "pos_km": 500.41794158320835,
+         "along_km": 495.5480775849505,
+         "late_s": -305.12704734411295,
+         "resid_km": 35.2286432044698
+        },
+        "30d": {
+         "pos_km": 1005.7898007428468,
+         "along_km": 967.8248771776782,
+         "late_s": -648.1651492418144,
+         "resid_km": 10.076063599255416
+        }
+       }
+      },
+      "default N=60": {
+       "degree": 60,
+       "wall_ms_per_30d": 4273,
+       "evals_per_day": 10812,
+       "errors": {
+        "1h": {
+         "pos_km": 0.15934122323077585,
+         "along_km": -0.12374974424149966,
+         "late_s": 0.07869570277845242,
+         "resid_km": 0.10037799018969763
+        },
+        "6h": {
+         "pos_km": 0.9073135367312436,
+         "along_km": -0.906868255097872,
+         "late_s": 0.5453448528658946,
+         "resid_km": 0.02849084197989704
+        },
+        "1d": {
+         "pos_km": 3.5511265294846885,
+         "along_km": -3.550023494018291,
+         "late_s": 2.158755962873067,
+         "resid_km": 0.09173097905157368
+        },
+        "3d": {
+         "pos_km": 10.048553198693885,
+         "along_km": -10.044677525939012,
+         "late_s": 6.345604768793736,
+         "resid_km": 0.29998695800258945
+        },
+        "7d": {
+         "pos_km": 25.732547364327896,
+         "along_km": -25.73077556743539,
+         "late_s": 16.32285222103211,
+         "resid_km": 0.47106090853506777
+        },
+        "14d": {
+         "pos_km": 49.74082906075452,
+         "along_km": -49.73435388469237,
+         "late_s": 30.383113386418326,
+         "resid_km": 0.18849175499881723
+        },
+        "30d": {
+         "pos_km": 93.68618761991917,
+         "along_km": -93.6561496224415,
+         "late_s": 60.26739115366004,
+         "resid_km": 0.12847684823437142
+        }
+       }
+      }
+     }
+    },
+    "fit": {
+     "start_utc": "2026-10-10T00:00:00.000Z",
+     "end_utc": "2026-11-08T23:59:59.999Z",
+     "configs": {
+      "two-body": {
+       "degree": 0,
+       "wall_ms_per_30d": 8,
+       "evals_per_day": 3612,
+       "errors": {
+        "1h": {
+         "pos_km": 0.29499151561038867,
+         "along_km": 0.15159437857586294,
+         "late_s": -0.09107263879815146,
+         "resid_km": 0.25306396571927353
+        },
+        "6h": {
+         "pos_km": 7.1745891749119135,
+         "along_km": 6.682901871700855,
+         "late_s": -4.253943553997364,
+         "resid_km": 2.61288468763447
+        },
+        "1d": {
+         "pos_km": 35.25792447510724,
+         "along_km": 33.9516024124171,
+         "late_s": -21.750379016291365,
+         "resid_km": 9.499346212872016
+        },
+        "3d": {
+         "pos_km": 105.35833594995668,
+         "along_km": 104.7308433535225,
+         "late_s": -66.77466081425526,
+         "resid_km": 11.254159400777692
+        },
+        "7d": {
+         "pos_km": 257.28274261633874,
+         "along_km": 255.69503554668665,
+         "late_s": -153.24585670373003,
+         "resid_km": 20.489640293680207
+        },
+        "14d": {
+         "pos_km": 302.40326330069394,
+         "along_km": 300.9976335883928,
+         "late_s": -193.62848369617618,
+         "resid_km": 4.986819031669936
+        },
+        "30d": {
+         "pos_km": 745.0889260829673,
+         "along_km": 730.41932392751,
+         "late_s": -471.5931408136537,
+         "resid_km": 1.4586004199986289
+        }
+       }
+      },
+      "default N=60": {
+       "degree": 60,
+       "wall_ms_per_30d": 4616,
+       "evals_per_day": 11711,
+       "errors": {
+        "1h": {
+         "pos_km": 0.828182512862945,
+         "along_km": -0.754124678401005,
+         "late_s": 0.4532168971502142,
+         "resid_km": 0.34244113991152153
+        },
+        "6h": {
+         "pos_km": 4.651149669491283,
+         "along_km": -4.650991069459329,
+         "late_s": 2.962424848791582,
+         "resid_km": 0.033314436378683546
+        },
+        "1d": {
+         "pos_km": 18.83589622740679,
+         "along_km": -18.835218414323265,
+         "late_s": 12.076456453032637,
+         "resid_km": 0.0743160727910125
+        },
+        "3d": {
+         "pos_km": 51.791216323041496,
+         "along_km": -51.789623827499966,
+         "late_s": 32.92163377180067,
+         "resid_km": 0.4454035860852251
+        },
+        "7d": {
+         "pos_km": 121.11598101048708,
+         "along_km": -121.06611895493306,
+         "late_s": 72.30516999824215,
+         "resid_km": 0.4885421599982577
+        },
+        "14d": {
+         "pos_km": 213.21810170016454,
+         "along_km": -212.8654695625191,
+         "late_s": 137.2021879920679,
+         "resid_km": 0.1736155030434092
+        },
+        "30d": {
+         "pos_km": 400.9080023395058,
+         "along_km": -398.7184786487562,
+         "late_s": 249.6850361808245,
+         "resid_km": 1.0348779201845102
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "artemis_p1",
+   "name": "ARTEMIS-P1 (THEMIS-B)",
+   "horizons_id": "-192",
+   "about": "NASA THEMIS-B, repurposed as ARTEMIS-P1 to study the lunar environment; in lunar orbit since 2011-06-27.",
+   "builtin": true,
+   "epoch_ms": 1794614400000.015,
+   "epoch_utc": "2026-11-14T00:00:00Z",
+   "r": [
+    1727.111525081244,
+    -15983.03783576644,
+    -6731.207224407553
+   ],
+   "v": [
+    -0.2665566462766983,
+    0.04330568145178101,
+    -0.008023487515617628
+   ],
+   "frame": "Moon-centred ICRF (J2000 Earth-equator axes), km and km/s",
+   "osculating_at_epoch": {
+    "a_km": 10013.2892,
+    "e": 0.7569,
+    "peri_alt_km": 696.399,
+    "apo_alt_km": 15855.3795,
+    "period_h": 24.9759,
+    "inc_icrf_deg": 156.0841
+   },
+   "altitude_range_30d_km": [
+    75.5,
+    16399.1
+   ],
+   "horizons": {
+    "target": "THEMIS-B (spacecraft) (-192)",
+    "solution": "THEMIS-B_merged",
+    "revised": "Nov 03, 2026",
+    "query_date": "Sat Nov 14 14:32:55 2026",
+    "trajectory": "The ARTEMIS-P1 spacecraft was the first to orbit an Earth-Moon Lagrange \n point (L2) and the first to orbit BOTH Earth-Moon L1 and L2 points.\n\n Trajectory prior to 2025-Jan-02 is a final reconstruction. Data after \n 2025-Jan-02 is a concatenated set of periodically updated (tag-up) solution\n predictions based on tracking data through 2026-Oct-29, with prediction \n thereafter.\n\n Trajectory name Start Stop\n ----------------------------------------------- ----------- -----------\n THEMIS_B_definitive_trajectory_20[07-24] 2007-Feb-18 2024-Jan-02 \n 192.THEMIS_B.SHORT_TERM.*.oem.V0.1 2024-Jan-02 2026-Nov-29",
+    "truth_end_utc": "2026-11-28T23:59:59Z"
+   },
+   "default_degree": 16,
+   "error_vs_horizons": {
+    "1h": {
+     "pos_km": 0,
+     "along_km": 0,
+     "late_s": 0,
+     "resid_km": 0
+    },
+    "6h": {
+     "pos_km": 0.019,
+     "along_km": -0.012,
+     "late_s": 0.02,
+     "resid_km": 0.014
+    },
+    "1d": {
+     "pos_km": 0.132,
+     "along_km": 0.126,
+     "late_s": -0.49,
+     "resid_km": 0.039
+    },
+    "3d": {
+     "pos_km": 0.289,
+     "along_km": 0.188,
+     "late_s": -0.73,
+     "resid_km": 0.22
+    },
+    "7d": {
+     "pos_km": 0.678,
+     "along_km": -0.608,
+     "late_s": 1.8,
+     "resid_km": 0.301
+    },
+    "14d": {
+     "pos_km": 8.906,
+     "along_km": -8.889,
+     "late_s": 6.28,
+     "resid_km": 0.554
+    }
+   },
+   "error_note": null,
+   "checked_days": 30,
+   "check_text": "Against JPL Horizons from 2026-11-14: 0.13 km after 1 day, 0.68 km after 7 days (1.8 s along-track)",
+   "default_on": false,
+   "error_tables": {
+    "now": {
+     "start_utc": "2026-11-14T00:00:00.000Z",
+     "end_utc": "2026-11-28T23:59:59.999Z",
+     "configs": {
+      "two-body": {
+       "degree": 0,
+       "wall_ms_per_30d": 6,
+       "evals_per_day": 3220,
+       "errors": {
+        "1h": {
+         "pos_km": 1.2522808145420405,
+         "along_km": 0.7284432023182813,
+         "late_s": -2.5339677301491506,
+         "resid_km": 1.0172413792261035
+        },
+        "6h": {
+         "pos_km": 45.41294758300582,
+         "along_km": 44.6502500682972,
+         "late_s": -86.25089495585249,
+         "resid_km": 8.266429719065215
+        },
+        "1d": {
+         "pos_km": 243.5800875805371,
+         "along_km": -236.13235393967145,
+         "late_s": 887.5637546117844,
+         "resid_km": 66.6916381233606
+        },
+        "3d": {
+         "pos_km": 742.2459761817685,
+         "along_km": -742.1122370523112,
+         "late_s": 2768.7460284150916,
+         "resid_km": 53.44663089531879
+        },
+        "7d": {
+         "pos_km": 1886.8678579255748,
+         "along_km": -1853.9190796265916,
+         "late_s": 5308.471187042512,
+         "resid_km": 235.16438761061093
+        },
+        "14d": {
+         "pos_km": 2847.6114406188753,
+         "along_km": -2786.9205253995765,
+         "late_s": 1850.2820449803335,
+         "resid_km": 232.0886859423276
+        }
+       }
+      },
+      "default N=16": {
+       "degree": 16,
+       "wall_ms_per_30d": 116,
+       "evals_per_day": 3220,
+       "errors": {
+        "1h": {
+         "pos_km": 0.0004736412572719527,
+         "along_km": 6.832923549447863e-05,
+         "late_s": -0.00023753429735234096,
+         "resid_km": 0.0004686865697544194
+        },
+        "6h": {
+         "pos_km": 0.018641845210744936,
+         "along_km": -0.012291916330495119,
+         "late_s": 0.023900350972479986,
+         "resid_km": 0.014015276902794348
+        },
+        "1d": {
+         "pos_km": 0.1317790241348476,
+         "along_km": 0.125949328710692,
+         "late_s": -0.48720206621393786,
+         "resid_km": 0.0387635578279234
+        },
+        "3d": {
+         "pos_km": 0.2891850157730527,
+         "along_km": 0.1881542523064013,
+         "late_s": -0.7285280344197609,
+         "resid_km": 0.21960744362856097
+        },
+        "7d": {
+         "pos_km": 0.6782429106984396,
+         "along_km": -0.6079913325643751,
+         "late_s": 1.8006051961017704,
+         "resid_km": 0.3006145390253239
+        },
+        "14d": {
+         "pos_km": 8.906351032215854,
+         "along_km": -8.88938621397908,
+         "late_s": 6.275411254756697,
+         "resid_km": 0.554376301183386
+        }
+       }
+      }
+     }
+    },
+    "fit": {
+     "start_utc": "2023-11-01T00:00:00.000Z",
+     "end_utc": "2023-11-30T23:59:59.999Z",
+     "configs": {
+      "two-body": {
+       "degree": 0,
+       "wall_ms_per_30d": 10,
+       "evals_per_day": 4414,
+       "errors": {
+        "1h": {
+         "pos_km": 0.6436822470023261,
+         "along_km": -0.544073709158366,
+         "late_s": 1.1004102252465675,
+         "resid_km": 0.3441516587227838
+        },
+        "6h": {
+         "pos_km": 20.15338509412501,
+         "along_km": -18.874041971348305,
+         "late_s": 8.755874088090152,
+         "resid_km": 7.037056396804938
+        },
+        "1d": {
+         "pos_km": 234.35528265170822,
+         "along_km": 172.37175969570993,
+         "late_s": -465.5708988560551,
+         "resid_km": 157.4318336778303
+        },
+        "3d": {
+         "pos_km": 489.1733223796922,
+         "along_km": 338.61399766844585,
+         "late_s": -1176.3502294456528,
+         "resid_km": 346.9000862008348
+        },
+        "7d": {
+         "pos_km": 757.2066370783501,
+         "along_km": 639.7294329219731,
+         "late_s": -2967.779951340792,
+         "resid_km": 404.48502445156475
+        },
+        "14d": {
+         "pos_km": 1816.3314581164934,
+         "along_km": 1760.522935545671,
+         "late_s": -4794.617181540037,
+         "resid_km": 580.4920238381868
+        },
+        "30d": {
+         "pos_km": 3760.860422154066,
+         "along_km": 3424.149493732045,
+         "late_s": -8654.816090812836,
+         "resid_km": 829.0912326981332
+        }
+       }
+      },
+      "default N=16": {
+       "degree": 16,
+       "wall_ms_per_30d": 156,
+       "evals_per_day": 4414,
+       "errors": {
+        "1h": {
+         "pos_km": 0.0003227703620696805,
+         "along_km": -0.0002688078526607655,
+         "late_s": 0.000543474273528309,
+         "resid_km": 0.00017867026856472246
+        },
+        "6h": {
+         "pos_km": 0.033476255950658444,
+         "along_km": 0.02846105775444914,
+         "late_s": -0.013234546118960315,
+         "resid_km": 0.017623204261597327
+        },
+        "1d": {
+         "pos_km": 0.1278034515682694,
+         "along_km": -0.0009408637467941148,
+         "late_s": 0.0024855482515483093,
+         "resid_km": 0.12779998150396768
+        },
+        "3d": {
+         "pos_km": 0.6056107965471202,
+         "along_km": -0.016997731763184573,
+         "late_s": 0.05433036194054525,
+         "resid_km": 0.6053720170075523
+        },
+        "7d": {
+         "pos_km": 0.5340717616351619,
+         "along_km": 0.212076362153944,
+         "late_s": -0.8234597610002484,
+         "resid_km": 0.4901140542351877
+        },
+        "14d": {
+         "pos_km": 1.913237582821569,
+         "along_km": -0.50205380081507,
+         "late_s": 1.175162765504148,
+         "resid_km": 1.8461368756364611
+        },
+        "30d": {
+         "pos_km": 1.2377132369976456,
+         "along_km": -0.391326186925384,
+         "late_s": 1.2613341006637218,
+         "resid_km": 1.1740960167107184
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "artemis_p2",
+   "name": "ARTEMIS-P2 (THEMIS-C)",
+   "horizons_id": "-193",
+   "about": "NASA THEMIS-C, repurposed as ARTEMIS-P2 to study the lunar environment; in lunar orbit since 2011-07-17.",
+   "builtin": true,
+   "epoch_ms": 1794614400000.015,
+   "epoch_utc": "2026-11-14T00:00:00Z",
+   "r": [
+    4813.530370674271,
+    13208.58438031096,
+    6315.975418527785
+   ],
+   "v": [
+    -0.1473398732174294,
+    0.3756964138328537,
+    0.08218235665491622
+   ],
+   "frame": "Moon-centred ICRF (J2000 Earth-equator axes), km and km/s",
+   "osculating_at_epoch": {
+    "a_km": 10506.9912,
+    "e": 0.8124,
+    "peri_alt_km": 233.4576,
+    "apo_alt_km": 17305.7248,
+    "period_h": 26.8456,
+    "inc_icrf_deg": 26.2097
+   },
+   "altitude_range_30d_km": [
+    89.1,
+    17558.8
+   ],
+   "horizons": {
+    "target": "THEMIS-C (spacecraft) (-193)",
+    "solution": "THEMIS-C_merged",
+    "revised": "Nov 10, 2026",
+    "query_date": "Sat Nov 14 14:32:58 2026",
+    "trajectory": "The ARTEMIS-P2 spacecraft was the first to orbit the Earth-Moon L1 Lagrange\n point. \n\n Trajectory prior to 2025-Jan-02 is a final reconstruction. Data after\n 2025-Jan-02 is a concatenated set of periodically updated (tag-up) solution\n predictions based on tracking data through 2026-Oct-30, with prediction \n thereafter.\n\n Trajectory name Start Stop\n ----------------------------------------------- ----------- -----------\n THEMIS_C_definitive_trajectory_20[07-24] 2007-Feb-18 2024-Jan-02 \n 193.THEMIS_C.SHORT_TERM.*.oem.V0.1 2024-Jan-02 2026-Nov-29",
+    "truth_end_utc": "2026-11-28T23:59:59Z"
+   },
+   "default_degree": 30,
+   "error_vs_horizons": {
+    "1h": {
+     "pos_km": 0,
+     "along_km": 0,
+     "late_s": 0,
+     "resid_km": 0
+    },
+    "6h": {
+     "pos_km": 0.014,
+     "along_km": 0.007,
+     "late_s": -0.03,
+     "resid_km": 0.012
+    },
+    "1d": {
+     "pos_km": 0.157,
+     "along_km": -0.096,
+     "late_s": 0.14,
+     "resid_km": 0.124
+    },
+    "3d": {
+     "pos_km": 0.237,
+     "along_km": 0.187,
+     "late_s": -0.25,
+     "resid_km": 0.146
+    },
+    "7d": {
+     "pos_km": 1.463,
+     "along_km": -1.456,
+     "late_s": 5.61,
+     "resid_km": 0.138
+    },
+    "14d": {
+     "pos_km": 3.139,
+     "along_km": -3.08,
+     "late_s": 10.06,
+     "resid_km": 0.61
+    }
+   },
+   "error_note": null,
+   "checked_days": 30,
+   "check_text": "Against JPL Horizons from 2026-11-14: 0.16 km after 1 day, 1.5 km after 7 days (5.6 s along-track)",
+   "default_on": false,
+   "error_tables": {
+    "now": {
+     "start_utc": "2026-11-14T00:00:00.000Z",
+     "end_utc": "2026-11-28T23:59:59.999Z",
+     "configs": {
+      "two-body": {
+       "degree": 0,
+       "wall_ms_per_30d": 10,
+       "evals_per_day": 4263,
+       "errors": {
+        "1h": {
+         "pos_km": 1.1511641464336986,
+         "along_km": -1.105984937290143,
+         "late_s": 3.06399865000742,
+         "resid_km": 0.31989851758119653
+        },
+        "6h": {
+         "pos_km": 47.731279308379435,
+         "along_km": -27.05747210588396,
+         "late_s": 116.69657781152164,
+         "resid_km": 39.89240912134037
+        },
+        "1d": {
+         "pos_km": 878.4917074152086,
+         "along_km": 868.7546611126379,
+         "late_s": -1325.7885064619811,
+         "resid_km": 132.81809719902827
+        },
+        "3d": {
+         "pos_km": 1613.0722076636039,
+         "along_km": 1336.7339045738447,
+         "late_s": -1576.1822231539866,
+         "resid_km": 874.0339893638145
+        },
+        "7d": {
+         "pos_km": 1003.7640391743522,
+         "along_km": 743.5117665106854,
+         "late_s": -3567.17730380809,
+         "resid_km": 705.3680611022144
+        },
+        "14d": {
+         "pos_km": 2317.70699888201,
+         "along_km": 1973.6898671680574,
+         "late_s": -5448.46240136615,
+         "resid_km": 946.7229664200527
+        }
+       }
+      },
+      "default N=30": {
+       "degree": 30,
+       "wall_ms_per_30d": 675,
+       "evals_per_day": 6383,
+       "errors": {
+        "1h": {
+         "pos_km": 0.00038928373719218504,
+         "along_km": -9.467740759017404e-05,
+         "late_s": 0.0002617651551896938,
+         "resid_km": 0.00037759510203103287
+        },
+        "6h": {
+         "pos_km": 0.013971340067210729,
+         "along_km": 0.007320885766289075,
+         "late_s": -0.03237862280784272,
+         "resid_km": 0.011899675436905503
+        },
+        "1d": {
+         "pos_km": 0.15724187485742913,
+         "along_km": -0.0962205692178892,
+         "late_s": 0.14138406149106783,
+         "resid_km": 0.12436520307301036
+        },
+        "3d": {
+         "pos_km": 0.23730259370571968,
+         "along_km": 0.1868345686668157,
+         "late_s": -0.24585700522254625,
+         "resid_km": 0.14630418965759082
+        },
+        "7d": {
+         "pos_km": 1.4628909184226402,
+         "along_km": -1.4563603090869615,
+         "late_s": 5.612008367619114,
+         "resid_km": 0.13811329104448
+        },
+        "14d": {
+         "pos_km": 3.139456482527147,
+         "along_km": -3.079504312287681,
+         "late_s": 10.057570828148078,
+         "resid_km": 0.6097366900499963
+        }
+       }
+      }
+     }
+    },
+    "fit": {
+     "start_utc": "2023-11-01T00:00:00.000Z",
+     "end_utc": "2023-11-30T23:59:59.999Z",
+     "configs": {
+      "two-body": {
+       "degree": 0,
+       "wall_ms_per_30d": 6,
+       "evals_per_day": 2620,
+       "errors": {
+        "1h": {
+         "pos_km": 0.9044786645210897,
+         "along_km": 0.8262431259448137,
+         "late_s": -2.8788909294372216,
+         "resid_km": 0.3673234583289418
+        },
+        "6h": {
+         "pos_km": 32.32157120511623,
+         "along_km": 3.2402075584347045,
+         "late_s": -11.823427207364613,
+         "resid_km": 32.123481541426145
+        },
+        "1d": {
+         "pos_km": 179.8713151808274,
+         "along_km": -89.69683548149254,
+         "late_s": 218.81137007620785,
+         "resid_km": 156.83233861530184
+        },
+        "3d": {
+         "pos_km": 770.9394029925554,
+         "along_km": -662.7609829169803,
+         "late_s": 708.6698661306311,
+         "resid_km": 403.0809706799153
+        },
+        "7d": {
+         "pos_km": 1531.872412033759,
+         "along_km": 1197.5764040280474,
+         "late_s": -3636.078476763647,
+         "resid_km": 909.9927972574575
+        },
+        "14d": {
+         "pos_km": 4658.077572491354,
+         "along_km": 4452.4643368640145,
+         "late_s": -5703.037245088379,
+         "resid_km": 922.4170085781561
+        },
+        "30d": {
+         "pos_km": 7509.636693635868,
+         "along_km": 7492.221093034074,
+         "late_s": -13475.976658322152,
+         "resid_km": 1015.2110825088098
+        }
+       }
+      },
+      "default N=30": {
+       "degree": 30,
+       "wall_ms_per_30d": 414,
+       "evals_per_day": 3924,
+       "errors": {
+        "1h": {
+         "pos_km": 0.0003020484214879478,
+         "along_km": 0.0002984314702637093,
+         "late_s": -0.0010412149132272804,
+         "resid_km": 4.6603719111279185e-05
+        },
+        "6h": {
+         "pos_km": 0.011198770241215239,
+         "along_km": 0.007240865198257382,
+         "late_s": -0.02389912153327796,
+         "resid_km": 0.008542945959463939
+        },
+        "1d": {
+         "pos_km": 0.2234339889813394,
+         "along_km": -0.15463587142246588,
+         "late_s": 0.3923999514184566,
+         "resid_km": 0.16127698090572742
+        },
+        "3d": {
+         "pos_km": 1.0789724404376644,
+         "along_km": -1.003531393838131,
+         "late_s": 1.0618593210579053,
+         "resid_km": 0.39643100707743556
+        },
+        "7d": {
+         "pos_km": 0.8641162270938609,
+         "along_km": 0.06593996421410066,
+         "late_s": -0.24396594096809754,
+         "resid_km": 0.8615971350754079
+        },
+        "14d": {
+         "pos_km": 4.311899335262604,
+         "along_km": -3.9985139351760397,
+         "late_s": 6.244760178087912,
+         "resid_km": 1.6144654633183686
+        },
+        "30d": {
+         "pos_km": 36.402364521324664,
+         "along_km": -36.341452493319494,
+         "late_s": 44.505704209646375,
+         "resid_km": 2.144871093421679
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "chandrayaan2",
+   "name": "Chandrayaan-2 orbiter",
+   "horizons_id": "-152",
+   "about": "ISRO Chandrayaan-2 orbiter (launched 2019-07-22); its lander Vikram separated on 2019-09-02 and was lost (Horizons header).",
+   "builtin": true,
+   "epoch_ms": 1794614400000.015,
+   "epoch_utc": "2026-11-14T00:00:00Z",
+   "r": [
+    -559.0916903547327,
+    1568.383770467932,
+    842.8299657044541
+   ],
+   "v": [
+    -0.01400368765210167,
+    0.7534553246405494,
+    -1.421949907373305
+   ],
+   "frame": "Moon-centred ICRF (J2000 Earth-equator axes), km and km/s",
+   "osculating_at_epoch": {
+    "a_km": 1840.0951,
+    "e": 0.0145,
+    "peri_alt_km": 76.0051,
+    "apo_alt_km": 129.3852,
+    "period_h": 1.9675,
+    "inc_icrf_deg": 97.6401
+   },
+   "altitude_range_30d_km": [
+    59.5,
+    145.3
+   ],
+   "horizons": {
+    "target": "Chandrayaan-2 (ORBITER) (spacecraft) (-152)",
+    "solution": "chandrayaan-2_orbiter_me",
+    "revised": "Nov 03, 2026",
+    "query_date": "Sat Nov 14 14:33:01 2026",
+    "trajectory": "This is a merge of post-launch trajectory solutions fit to tracking data \n through 2026-Nov-01, with a prediction thereafter.\n \n Trajectory name Start (TDB) Stop (TDB)\n ----------------------------------------- ----------------- -----------------\n ch2o_spk_190722-[200901_od*]_v*_dsn.V0.* 2019-Jul-22 09:31 2020-Jun-01 09:01\n ISRO_CH2*-OD* 2020-Jun-01 09:01 2026-Dec-11 21:00",
+    "truth_end_utc": "2026-12-10T23:59:59Z"
+   },
+   "default_degree": 60,
+   "error_vs_horizons": {
+    "1h": {
+     "pos_km": 0.007,
+     "along_km": -0.006,
+     "late_s": 0,
+     "resid_km": 0.004
+    },
+    "6h": {
+     "pos_km": 0.085,
+     "along_km": -0.084,
+     "late_s": 0.05,
+     "resid_km": 0.01
+    },
+    "1d": {
+     "pos_km": 0.063,
+     "along_km": -0.061,
+     "late_s": 0.04,
+     "resid_km": 0.015
+    },
+    "3d": {
+     "pos_km": 0.107,
+     "along_km": 0.047,
+     "late_s": -0.03,
+     "resid_km": 0.096
+    },
+    "7d": {
+     "pos_km": 0.236,
+     "along_km": 0.186,
+     "late_s": -0.11,
+     "resid_km": 0.145
+    },
+    "14d": {
+     "pos_km": 0.506,
+     "along_km": 0.501,
+     "late_s": -0.31,
+     "resid_km": 0.066
+    }
+   },
+   "error_note": null,
+   "checked_days": 30,
+   "check_text": "Against JPL Horizons from 2026-11-14: 0.06 km after 1 day, 0.24 km after 7 days (0.1 s along-track)",
+   "default_on": true,
+   "error_tables": {
+    "now": {
+     "start_utc": "2026-11-14T00:00:00.000Z",
+     "end_utc": "2026-12-10T23:59:59.999Z",
+     "configs": {
+      "two-body": {
+       "degree": 0,
+       "wall_ms_per_30d": 8,
+       "evals_per_day": 3522,
+       "errors": {
+        "1h": {
+         "pos_km": 2.2894084379752284,
+         "along_km": -2.187725555788654,
+         "late_s": 1.3217144564832564,
+         "resid_km": 0.6754386854724017
+        },
+        "6h": {
+         "pos_km": 6.7120673129262265,
+         "along_km": -6.632726969005697,
+         "late_s": 4.115412907031919,
+         "resid_km": 1.028936163891349
+        },
+        "1d": {
+         "pos_km": 30.700077633739436,
+         "along_km": -30.447996181978887,
+         "late_s": 18.69230398873778,
+         "resid_km": 4.076842011415768
+        },
+        "3d": {
+         "pos_km": 153.04215519833403,
+         "along_km": -152.20102381887475,
+         "late_s": 92.45872386589282,
+         "resid_km": 11.073707966087673
+        },
+        "7d": {
+         "pos_km": 268.1233543237221,
+         "along_km": -266.90435466467943,
+         "late_s": 162.08667437959068,
+         "resid_km": 18.27926077508404
+        },
+        "14d": {
+         "pos_km": 481.7880352743456,
+         "along_km": -477.55792225049777,
+         "late_s": 298.07236943149934,
+         "resid_km": 1.3981018043077376
+        }
+       }
+      },
+      "default N=60": {
+       "degree": 60,
+       "wall_ms_per_30d": 4156,
+       "evals_per_day": 10538,
+       "errors": {
+        "1h": {
+         "pos_km": 0.006891157044509906,
+         "along_km": -0.005613315694978522,
+         "late_s": 0.00338973634434889,
+         "resid_km": 0.003997524504299215
+        },
+        "6h": {
+         "pos_km": 0.08463782668821371,
+         "along_km": -0.08402117383954234,
+         "late_s": 0.052118522474809595,
+         "resid_km": 0.010200172669870432
+        },
+        "1d": {
+         "pos_km": 0.06279043945664099,
+         "along_km": -0.06100327802008975,
+         "late_s": 0.037370543826528865,
+         "resid_km": 0.014875392376178461
+        },
+        "3d": {
+         "pos_km": 0.10684254885963704,
+         "along_km": 0.047042101190750134,
+         "late_s": -0.028682757363814107,
+         "resid_km": 0.09593045091142999
+        },
+        "7d": {
+         "pos_km": 0.2360839702317981,
+         "along_km": 0.1864775044903811,
+         "late_s": -0.11243554071213692,
+         "resid_km": 0.14477135945080433
+        },
+        "14d": {
+         "pos_km": 0.5056030897299664,
+         "along_km": 0.5012831266567152,
+         "late_s": -0.3099417603952303,
+         "resid_km": 0.06597754839405011
+        }
+       }
+      }
+     }
+    },
+    "fit": {
+     "start_utc": "2026-10-01T00:00:00.000Z",
+     "end_utc": "2026-10-30T23:59:59.999Z",
+     "configs": {
+      "two-body": {
+       "degree": 0,
+       "wall_ms_per_30d": 8,
+       "evals_per_day": 3503,
+       "errors": {
+        "1h": {
+         "pos_km": 4.3232065690410355,
+         "along_km": 3.9918349462137264,
+         "late_s": -2.458378228161581,
+         "resid_km": 1.6560333163575314
+        },
+        "6h": {
+         "pos_km": 21.46016062007609,
+         "along_km": 21.291700801500816,
+         "late_s": -12.925196420068346,
+         "resid_km": 2.7383091524334646
+        },
+        "1d": {
+         "pos_km": 81.27963110320876,
+         "along_km": 81.19201023283368,
+         "late_s": -49.14337368942777,
+         "resid_km": 1.852219908533438
+        },
+        "3d": {
+         "pos_km": 209.41871743358803,
+         "along_km": 209.15742241583814,
+         "late_s": -129.85389123402845,
+         "resid_km": 11.76844505065432
+        },
+        "7d": {
+         "pos_km": 2400.342236679688,
+         "along_km": 1824.465054931265,
+         "late_s": -1589.6668783237217,
+         "resid_km": 23.17923972972489
+        },
+        "14d": {
+         "pos_km": 3365.1735771158,
+         "along_km": 1327.933476737833,
+         "late_s": -2616.103548560414,
+         "resid_km": 28.58341211385056
+        },
+        "30d": {
+         "pos_km": 3216.161985273555,
+         "along_km": -1573.080706732173,
+         "late_s": 2418.166619201738,
+         "resid_km": 4.735296858881706
+        }
+       }
+      },
+      "default N=60": {
+       "degree": 60,
+       "wall_ms_per_30d": 4487,
+       "evals_per_day": 11358,
+       "errors": {
+        "1h": {
+         "pos_km": 0.019593360974197033,
+         "along_km": -0.01848886057594657,
+         "late_s": 0.011395861307773508,
+         "resid_km": 0.006485519981117981
+        },
+        "6h": {
+         "pos_km": 0.015704761279560678,
+         "along_km": -0.012250277794148839,
+         "late_s": 0.007435472496306381,
+         "resid_km": 0.009826467455391142
+        },
+        "1d": {
+         "pos_km": 0.4384778392857767,
+         "along_km": 0.4062699538122487,
+         "late_s": -0.24590054654455762,
+         "resid_km": 0.1651744063843851
+        },
+        "3d": {
+         "pos_km": 2.0026028581015907,
+         "along_km": -1.978371407226284,
+         "late_s": 1.221289454545266,
+         "resid_km": 0.3100536782973408
+        },
+        "7d": {
+         "pos_km": 1973.2974745234872,
+         "along_km": 1660.0702234003415,
+         "late_s": -1262.110658329664,
+         "resid_km": 19.397335406114316
+        },
+        "14d": {
+         "pos_km": 2686.6036902123737,
+         "along_km": 1835.821485576225,
+         "late_s": -1884.0100620021474,
+         "resid_km": 15.6514008846113
+        },
+        "30d": {
+         "pos_km": 3601.0757653636333,
+         "along_km": 680.4409543264421,
+         "late_s": -3056.6789117582166,
+         "resid_km": 3.4477111064826667
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ ],
+ "not_included": [
+  {
+   "id": "capstone",
+   "name": "CAPSTONE",
+   "horizons_id": "-1176",
+   "about": "NASA CubeSat pathfinder for Gateway in a near-rectilinear halo orbit; Horizons: completed mission, no further updates, trajectory ends 2026-08-14.",
+   "builtin": false,
+   "epoch_ms": 1781395199999.87,
+   "epoch_utc": "2026-06-13T23:59:59Z",
+   "r": [
+    2644.409320861776,
+    42288.39668096977,
+    -53441.31574340573
+   ],
+   "v": [
+    0.06539573001921978,
+    0.01379930258480261,
+    -0.07776095994529245
+   ],
+   "frame": "Moon-centred ICRF (J2000 Earth-equator axes), km and km/s",
+   "osculating_at_epoch": {
+    "a_km": 36790.4658,
+    "e": 0.9288,
+    "peri_alt_km": 882.3356,
+    "apo_alt_km": 69223.7961,
+    "period_h": 175.8969,
+    "inc_icrf_deg": 123.2496
+   },
+   "altitude_range_30d_km": [
+    1536.5,
+    69934.4
+   ],
+   "horizons": {
+    "target": "CAPSTONE (spacecraft) (-1176)",
+    "solution": "CAPSTONE_merged",
+    "revised": "Jul 20, 2026",
+    "query_date": "Sat Nov 14 14:33:04 2026",
+    "trajectory": "Trajectory from launch, with tag-up predictions from navigation.\n Data through July 15, 2026. Prediction thereafter.\n\n Trajectory name Start (TDB) Stop (TDB)\n ---------------------------------------- ----------------- -----------------\n photon_capstone_full_mission 2022-Jun-28 10:07 2022-Jul-04 17:15\n Merge of 140 files (od007 to od332) 2022-Jul-04 17:15 2026-Aug-14 11:56\n *******************************************************************************",
+    "truth_end_utc": "2026-07-14T00:00:00Z"
+   },
+   "default_degree": 16,
+   "error_vs_horizons": {
+    "1h": {
+     "pos_km": 0.001,
+     "along_km": 0,
+     "late_s": 0,
+     "resid_km": 0.001
+    },
+    "6h": {
+     "pos_km": 0.037,
+     "along_km": -0.007,
+     "late_s": 0.08,
+     "resid_km": 0.036
+    },
+    "1d": {
+     "pos_km": 0.834,
+     "along_km": -0.597,
+     "late_s": 6.92,
+     "resid_km": 0.581
+    },
+    "3d": {
+     "pos_km": 7.97,
+     "along_km": -1.413,
+     "late_s": 3.55,
+     "resid_km": 7.844
+    },
+    "7d": {
+     "pos_km": 43.978,
+     "along_km": -32.819,
+     "late_s": 462.34,
+     "resid_km": 29.362
+    },
+    "14d": {
+     "pos_km": 314.677,
+     "along_km": 172.954,
+     "late_s": -2137.67,
+     "resid_km": 261.333
+    },
+    "30d": {
+     "pos_km": 5181.352,
+     "along_km": -5137.276,
+     "late_s": 5228.07,
+     "resid_km": 806.646
+    }
+   },
+   "error_note": "Horizons trajectory departs from ballistic motion (1-h arc residual above 0.30 km) at 8 hourly rows, first 2026-06-16T16:59:59.999Z",
+   "checked_days": 30,
+   "check_text": "Against JPL Horizons from 2026-06-13: 0.83 km after 1 day, 44 km after 7 days (462.3 s along-track)",
+   "default_on": false,
+   "error_tables": {
+    "fit": {
+     "start_utc": "2026-06-13T23:59:59.999Z",
+     "end_utc": "2026-07-14T00:00:00.000Z",
+     "configs": {
+      "two-body": {
+       "degree": 0,
+       "wall_ms_per_30d": 7,
+       "evals_per_day": 3069,
+       "errors": {
+        "1h": {
+         "pos_km": 3.92888938495074,
+         "along_km": 2.187918631430832,
+         "late_s": -22.488732062302727,
+         "resid_km": 3.2229687406949648
+        },
+        "6h": {
+         "pos_km": 142.39245557137676,
+         "along_km": 54.543700932573444,
+         "late_s": -823.9649059661515,
+         "resid_km": 122.55670915935768
+        },
+        "1d": {
+         "pos_km": 2317.1438822360838,
+         "along_km": -1407.1564876081036,
+         "late_s": -1156.4093036718007,
+         "resid_km": 2316.199584060644
+        },
+        "3d": {
+         "pos_km": 21706.379035306494,
+         "along_km": -19459.9771821642,
+         "late_s": 68013.92081200151,
+         "resid_km": 12144.987417607043
+        },
+        "7d": {
+         "pos_km": 18319.11508136218,
+         "along_km": 14844.614907702502,
+         "late_s": 5342.14583703072,
+         "resid_km": 18304.918826501962
+        },
+        "14d": {
+         "pos_km": 27982.347696227185,
+         "along_km": 8875.06647252637,
+         "late_s": 205237.77047789845,
+         "resid_km": 25058.370612913088
+        },
+        "30d": {
+         "pos_km": 70226.11130119108,
+         "along_km": -52004.10400079221,
+         "late_s": -301699.79805221944,
+         "resid_km": 5300.44526213297
+        }
+       }
+      },
+      "default N=16": {
+       "degree": 16,
+       "wall_ms_per_30d": 113,
+       "evals_per_day": 3069,
+       "errors": {
+        "1h": {
+         "pos_km": 0.0010201448216489893,
+         "along_km": -0.0002347872322756987,
+         "late_s": 0.002379213952484579,
+         "resid_km": 0.0009927603047797952
+        },
+        "6h": {
+         "pos_km": 0.03690318298672311,
+         "along_km": -0.006960111571215153,
+         "late_s": 0.0847963244372182,
+         "resid_km": 0.03624117138794643
+        },
+        "1d": {
+         "pos_km": 0.8336090234252715,
+         "along_km": -0.597480437705667,
+         "late_s": 6.922362454305691,
+         "resid_km": 0.581419593534461
+        },
+        "3d": {
+         "pos_km": 7.9700333568602915,
+         "along_km": -1.413298485358195,
+         "late_s": 3.550719355403275,
+         "resid_km": 7.844278028099816
+        },
+        "7d": {
+         "pos_km": 43.97752667302053,
+         "along_km": -32.8187541141669,
+         "late_s": 462.34229747653086,
+         "resid_km": 29.361847989240562
+        },
+        "14d": {
+         "pos_km": 314.67708063381207,
+         "along_km": 172.9535939282093,
+         "late_s": -2137.672524295325,
+         "resid_km": 261.3333302977279
+        },
+        "30d": {
+         "pos_km": 5181.351835832183,
+         "along_km": -5137.275691069727,
+         "late_s": 5228.069437352593,
+         "resid_km": 806.6464475067628
+        }
+       }
+      }
+     }
+    }
+   },
+   "reason": "Horizons trajectory ends 2026-08-14 (header: completed mission, no further updates), so there is no state near 2026-11-14. Used only to validate the propagator on a near-rectilinear halo orbit."
+  }
+ ]
+}

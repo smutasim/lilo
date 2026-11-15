@@ -1,0 +1,34 @@
+{
+  "name": "lunar-window-browser",
+  "version": "0.6.0",
+  "private": true,
+  "description": "Lunar landing-site analysis: Sun, Earth and satellites against LOLA skylines, with numerically propagated lunar orbiters checked against JPL Horizons; timeline of visibility, time to sunset and Earthset, solar irradiance, site comparison and a site finder over 3,600 real horizons. NASA Space Apps 2026, Lunar Landing Site Navigator.",
+  "scripts": {
+    "build": "node tools/build.js",
+    "test": "node tests/check_core.js && node tests/check_prop.js --quick",
+    "test:core": "node tests/check_core.js",
+    "test:ui": "python tests/screenshot.py",
+    "validate:horizons": "python tests/validate_horizons.py",
+    "validate:illumination": "python tests/validate_illumination.py",
+    "data:ephem": "python tools/ephem/make_ephem.py",
+    "data:terrain": "python tools/terrain/make_terrain.py",
+    "data:polar": "python tools/terrain/make_polarmap.py",
+    "data:sky": "node tools/skydata.js data",
+    "data:survey": "python tools/terrain/make_survey.py",
+    "validate:survey": "node tests/validate_survey.js 1",
+    "helper": "python tools/terrain/serve.py",
+    "data:clones": "python tools/terrain/make_clone_masks.py",
+    "test:helper": "python tests/check_helper.py",
+    "test:prop": "node tests/check_prop.js",
+    "test:comms": "python tests/check_comms.py",
+    "data:sats": "python tools/sats/make_sats.py"
+  },
+  "dependencies": {
+    "astronomy-engine": "2.1.19"
+  },
+  "devDependencies": {
+    "d3-celestial": "^0.7.35",
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2"
+  }
+}

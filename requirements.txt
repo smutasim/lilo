@@ -1,0 +1,7 @@
+# offline tools and validation (the page itself needs none of this)
+spiceypy
+numpy
+numba
+tifffile
+imagecodecs
+playwright

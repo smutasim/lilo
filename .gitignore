@@ -1,0 +1,10 @@
+node_modules/
+tests/out/
+__pycache__/
+.venv/
+# raw DEMs and SPICE kernels are downloaded, not committed (see README)
+data/raw/
+tools/ephem/kernels/
+
+# built by `npm run build` (Cloudflare Pages runs it on deploy)
+dist/

@@ -1,0 +1,69 @@
+<!-- ============ view: find a site ============ -->
+<div id="view-find" hidden>
+  <div class="page">
+    <div class="tool">
+      <div>
+        <section class="panel" aria-labelledby="fMisH">
+          <div class="panel-h"><h2 id="fMisH">Mission and area</h2></div>
+          <div class="panel-b">
+            <div class="row2">
+              <div class="field"><label for="fStart">Landing (UTC)</label><input id="fStart" type="date"></div>
+              <div class="field"><label for="fDays">Surface days</label><input id="fDays" type="number" min="1" max="180" step="1" value="30"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="fLat0">Latitude from (&deg;S)</label><input id="fLat0" type="number" min="82.5" max="90" step="0.1" placeholder="any"></div>
+              <div class="field"><label for="fLat1">to (&deg;S)</label><input id="fLat1" type="number" min="82.5" max="90" step="0.1" placeholder="any"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="fLon0">Longitude from (&deg;E)</label><input id="fLon0" type="number" min="-180" max="360" step="1" placeholder="any"></div>
+              <div class="field"><label for="fLon1">to (&deg;E, eastward)</label><input id="fLon1" type="number" min="-180" max="360" step="1" placeholder="any"></div>
+            </div>
+            <p class="hint" id="fSurveyNote"></p>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="fGoalH">
+          <div class="panel-h"><h2 id="fGoalH">Goals for the stay</h2></div>
+          <div class="panel-b">
+            <div class="btnrow"><span class="hint">Constraints in use</span><button id="fLimEdit" type="button">Change</button></div>
+            <div class="chips" id="fLim"></div>
+            <p class="hint">Constraints decide when a moment counts; goals decide what the whole stay must achieve. Leave a box empty for no goal. Darkness means no part of the Sun in view.</p>
+            <div class="goal"><label for="gIrr">Mean solar irradiance, at least (W/m&sup2;)</label><input id="gIrr" type="number" min="0" max="1500" step="10" placeholder="any"></div>
+            <div class="goal"><label for="gDay">Lowest 24 h mean irradiance, at least (W/m&sup2;)</label><input id="gDay" type="number" min="0" max="1500" step="10" placeholder="any"></div>
+            <div class="goal"><label for="gDark">Longest darkness, at most (h)</label><input id="gDark" type="number" min="0" step="1" placeholder="any"></div>
+            <div class="goal"><label for="gEarth">Earth link, at least (% of the time)</label><input id="gEarth" type="number" min="0" max="100" step="1" placeholder="any"></div>
+            <div class="goal"><label for="gOut">Longest Earth-link outage, at most (h)</label><input id="gOut" type="number" min="0" step="1" placeholder="any"></div>
+            <div class="goal"><label for="gSlope">Slope, at most (&deg;)</label><input id="gSlope" type="number" min="0" max="45" step="1" placeholder="any"></div>
+            <ul class="funnel" id="funnel"></ul>
+          </div>
+        </section>
+      </div>
+
+      <div>
+        <section class="panel" aria-labelledby="fCandH">
+          <div class="panel-h">
+            <h2 id="fCandH">Candidates</h2>
+            <span class="sp"></span>
+            <label for="fColor">Colour by</label><select id="fColor"></select>
+            <label for="baseFind">Map</label><select id="baseFind" class="baseSel"><option value="img">LROC image</option><option value="sun">Average sunlight</option></select>
+            <button id="fOpen" type="button" disabled>Open in Site view</button>
+          </div>
+          <div class="panel-b">
+            <div class="prog" id="fProgWrap"><i id="fProg"></i></div>
+            <p class="hint" id="fStatus"></p>
+            <div class="fsplit">
+              <div>
+                <canvas id="fmap" role="img" aria-label="South polar map with the candidate points that meet the goals"></canvas>
+                <p id="fRead"></p>
+                <p class="hint" id="fSel" aria-live="polite">No candidate selected. Click a point on the map or a row in the table.</p>
+              </div>
+              <div class="tblwrap tall"><table class="cmp" id="fTable"></table></div>
+            </div>
+            <details class="sub"><summary>What the candidates are, and what they cannot tell you</summary><p class="note" id="fNote"></p></details>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+

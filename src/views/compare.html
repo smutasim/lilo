@@ -1,0 +1,29 @@
+<!-- ============ view: compare all sites ============ -->
+<div id="view-list" hidden>
+  <div class="page">
+    <section class="panel" aria-labelledby="listH">
+      <div class="panel-h">
+        <h2 id="listH">All sites</h2><span class="meta" id="listWhen"></span>
+        <span class="sp"></span>
+        <button id="listCsv" type="button">Export CSV</button>
+        <button id="addBtn" type="button" aria-expanded="false" aria-controls="addForm">Add sites</button>
+      </div>
+      <div class="panel-b flush">
+        <form id="addForm" class="addform" hidden>
+          <div class="field"><label for="newName">Name</label><input id="newName" type="text" maxlength="40" placeholder="My site"></div>
+          <div class="field"><label for="newLat">Latitude (&deg;, north +)</label><input id="newLat" type="number" min="-90" max="90" step="any" value="-89.5"></div>
+          <div class="field"><label for="newLon">Longitude (&deg;E)</label><input id="newLon" type="number" min="-180" max="360" step="any" value="-137.0"></div>
+          <div class="btnrow"><button id="addOk" type="submit" class="primary">Add</button><button id="addCancel" type="button">Close</button></div>
+          <div class="full field"><label for="bulk">Or paste a list, one site per line: name, latitude, longitude</label><textarea id="bulk" rows="3" placeholder="Ridge A, -89.45, 222.7&#10;Rim B, -89.78, -155.2"></textarea></div>
+          <div class="full btnrow"><button id="bulkOk" type="button">Add the list</button><p class="hint" id="addHint"></p></div>
+        </form>
+        <div class="tblwrap"><table class="cmp" id="listTable"></table></div>
+      </div>
+      <div class="panel-b">
+        <p class="hint">Click a row to open the site. Click a column heading to sort, again to reverse, a third time to return to groups.</p>
+        <details class="sub"><summary>About these columns</summary><p class="note" id="listNote"></p></details>
+      </div>
+    </section>
+  </div>
+</div>
+

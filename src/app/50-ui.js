@@ -399,7 +399,7 @@ function deliver(text, name, mime, btn, label) {
     btn.textContent = 'Saved'; setTimeout(function () { btn.textContent = label; }, 2200);
   } catch (x) {}
 }
-function fileBase() { return 'lunar-windows_' + SITES[S.sel].name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '_' + iso(S.startMs).slice(0, 10); }
+function fileBase() { return 'lilo_' + SITES[S.sel].name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '_' + iso(S.startMs).slice(0, 10); }
 $('csvBtn').addEventListener('click', function () { deliver(toCSV(exportData()), fileBase() + '.csv', 'text/csv', $('csvBtn'), 'Export CSV'); });
 
 /* State in the URL hash, so a link reproduces the view:

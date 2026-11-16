@@ -25,7 +25,7 @@ const parts = {
 for (const k of Object.keys(parts)) { if (!t.includes(k)) throw new Error('placeholder missing: ' + k); t = t.replace(k, () => parts[k]); }
 fs.mkdirSync(path.join(root, 'dist'), { recursive: true });
 fs.writeFileSync(path.join(root, 'dist/lunar-window-browser.html'), t);
-// Same page as dist/index.html so a static host (Cloudflare Pages) serves it at the site root.
+// Same page as dist/index.html so GitHub Pages serves it at https://smutasim.github.io/lilo/.
 fs.writeFileSync(path.join(root, 'dist/index.html'), t);
 fs.mkdirSync(path.join(root, 'dist/terrain3d'), { recursive: true });
 let tb = 0;

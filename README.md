@@ -3,6 +3,8 @@
 Compare lunar landing sites and dates by where the Sun and Earth sit against the local skyline.
 Built for the NASA Space Apps 2026 challenge *Lunar Landing Site Navigator*.
 
+**Live:** https://smutasim.github.io/lilo/ (built and published by GitHub Actions on every push to `main`; see `.github/workflows/pages.yml`).
+
 **AI acknowledgement.** The code and text of this project were generated with AI (Anthropic Claude, via Claude Code),
 directed by Sharif Mutasim. Every number in the tool comes from the NASA data and cited sources below, not from the AI.
 

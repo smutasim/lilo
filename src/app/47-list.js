@@ -139,7 +139,7 @@ $('cmpPrev').addEventListener('click', function () { var t = cmpDay0() - DAY / 2
 $('cmpNext').addEventListener('click', function () { var t = cmpDay0() + DAY * 1.5; $('cmpDay').value = toZonedInput(t).slice(0, 10); cmpRender(); });
 $('cmpClear').addEventListener('click', function () { LIST.cmp = []; updateList(); cmpRender(); });
 function listCSV() {
-  var L = ['# Lunar Window Browser, site list. Not flight-grade.', '# period: ' + S.horizonD + ' days from ' + iso(S.tMs), '# limits: ' + limitsList().join('; '), '# irradiance: W/m2 on a Sun-facing surface; 1361 W/m2 at 1 au (IAU 2015 Resolution B3) x (1 au / Sun distance)^2 x visible fraction of the solar disk',
+  var L = ['# LILO (Lunar Illumination and Landing Optimizer), site list. Not flight-grade.', '# period: ' + S.horizonD + ' days from ' + iso(S.tMs), '# limits: ' + limitsList().join('; '), '# irradiance: W/m2 on a Sun-facing surface; 1361 W/m2 at 1 au (IAU 2015 Resolution B3) x (1 au / Sun distance)^2 x visible fraction of the solar disk',
     '# ephemeris: ' + (STEPS.fallback ? 'astronomy-engine fallback in part' : 'SPICE DE440, MOON_ME') + ' | observer height ' + S.hobs + ' m where a mask exists | 10-min samples'];
   L.push(['name', 'lat_deg', 'lon_east_deg', 'terrain', 'limits_met_now'].concat(LCOLS.map(function (c) { return c.csv; })).join(','));
   LIST.rows.forEach(function (r) {

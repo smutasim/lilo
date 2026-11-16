@@ -1,4 +1,4 @@
-/* Lunar Window Browser: application style.
+/* LILO: application style.
    A desktop engineering tool, not a web page: system fonts, a fixed header with tabs, bordered panels with title
    bars, compact controls, data grids, a status bar. One light look; only the sky viewport is dark.
    Canvas colours are read from the tokens on :root (readColors in 30-plots.js). */
@@ -312,3 +312,15 @@ td.better { background: #E6F4E8 !important; font-weight: 600; }
 @media (max-width: 700px) { .cmp2 { grid-template-columns: minmax(0, 1fr); } }
 .learnlist { margin: 0; padding-left: 18px; font-size: 12.5px; line-height: 1.75; columns: 2 340px; }
 #listTable th:nth-child(2), #listTable td:nth-child(2) { text-align: left; }
+
+/* guided tour (60-tour.js) */
+.titlebar .tourbtn { height: 24px; padding: 0 10px; font: 600 12px var(--f); color: #fff; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.35); border-radius: 3px; cursor: pointer; }
+.titlebar .tourbtn:hover { background: rgba(255,255,255,.2); }
+.tour-hi { position: fixed; z-index: 900; border: 2px solid var(--accent-2); border-radius: 4px; box-shadow: 0 0 0 9999px rgba(8,18,32,.45); pointer-events: none; transition: all .15s ease-out; }
+.tour-card { position: fixed; z-index: 901; width: min(340px, calc(100vw - 32px)); padding: 12px 14px; color: var(--ink); background: var(--panel); border: 1px solid var(--line-2); border-radius: 4px; box-shadow: 0 6px 24px rgba(0,0,0,.25); font: 13px/1.45 var(--f); }
+.tour-card h3 { margin: 0 0 4px; font-size: 14px; }
+.tour-card p { margin: 0 0 10px; }
+.tour-card .tour-n { margin: 0 0 2px; font-size: 11px; color: var(--mute); }
+.tour-card .btnrow { display: flex; gap: 6px; align-items: center; }
+.tour-card .btnrow .sp { flex: 1; }
+.tour-ask { right: 16px; bottom: 36px; }

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Lunar Window Browser</title>
-<meta name="description" content="Lunar landing-site analysis: Sun, Earth and lunar orbiters against LOLA skylines. NASA Space Apps 2026, Lunar Landing Site Navigator. Uses NASA data: LOLA (PGDA, PDS), LROC, GRAIL GRGM1200A, JPL Horizons, NAIF SPICE. Code and text generated with AI (Anthropic Claude, via Claude Code), directed by Sharif Mutasim.">
+<title>LILO: Lunar Illumination and Landing Optimizer</title>
+<meta name="description" content="LILO, the Lunar Illumination and Landing Optimizer. Lunar landing-site analysis: Sun, Earth and lunar orbiters against LOLA skylines. NASA Space Apps 2026, Lunar Landing Site Navigator. Uses NASA data: LOLA (PGDA, PDS), LROC, GRAIL GRGM1200A, JPL Horizons, NAIF SPICE. Code and text generated with AI (Anthropic Claude, via Claude Code), directed by Sharif Mutasim.">
 <meta name="author" content="Sharif Mutasim">
 <meta name="ai-generated" content="Code and text generated with AI: Anthropic Claude, via Claude Code. Data and constants come from the cited sources, not from the AI.">
 <meta name="generator" content="Anthropic Claude (Claude Code), AI-assisted">
@@ -15,9 +15,10 @@ __CSS__
 <body>
 <header class="app-header">
   <div class="titlebar">
-    <div class="brand"><span class="mark" aria-hidden="true"></span><h1>Lunar Window Browser</h1><span class="sub">Sun, Earth and satellite visibility from the lunar surface</span></div>
+    <div class="brand"><span class="mark" aria-hidden="true"></span><h1>LILO</h1><span class="sub">Lunar Illumination and Landing Optimizer</span></div>
     <span class="sp"></span>
     <span class="clock" id="clock"></span>
+    <button type="button" id="tourBtn" class="tourbtn" title="A short guided tour of the page">Tour</button>
   </div>
   <nav class="navbar views" role="tablist" aria-label="Views">
     <button type="button" class="tab" role="tab" data-view="site" aria-selected="true">Site<span class="long"> analysis</span></button>

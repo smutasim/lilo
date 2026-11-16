@@ -167,6 +167,16 @@ function renderSky() {
     c.fillStyle = gl; c.fillRect(0, 0, W, Hh);
     c.globalCompositeOperation = 'source-over';
   }
+  // 11. labels: drawn last so the ground never covers them; a body behind the skyline says so
+  function bodyLabel(name, P, rpx, frac) {
+    if (!P || !onScreen(P, C, 0)) return;
+    var t = frac > 0 ? name : name + ' (behind the skyline)', y = P[1] + Math.max(rpx, 3) + 9;
+    c.font = '600 12px "Segoe UI", Arial, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'top';
+    c.lineWidth = 3; c.strokeStyle = 'rgba(2,3,6,.85)'; c.strokeText(t, P[0], y);
+    c.fillStyle = frac > 0 ? 'rgba(255,255,255,.95)' : 'rgba(220,226,235,.7)'; c.fillText(t, P[0], y);
+  }
+  bodyLabel('Sun', sunP, sunR, L0.sunFrac);
+  bodyLabel('Earth', earthP, earthRpx, L0.earthFrac);
   lastSky = { sun: sunAA, earth: earthAA, earthFrac: earthFrac, L: L0 };
   updateHud();
 }

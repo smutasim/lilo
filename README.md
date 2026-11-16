@@ -1,4 +1,4 @@
-# Lunar Window Browser
+# LILO: Lunar Illumination and Landing Optimizer
 
 Compare lunar landing sites and dates by where the Sun and Earth sit against the local skyline.
 Built for the NASA Space Apps 2026 challenge *Lunar Landing Site Navigator*.

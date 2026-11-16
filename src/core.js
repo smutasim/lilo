@@ -1,4 +1,4 @@
-/* Lunar Window Browser core: ephemeris interpolation, topocentric geometry, horizon masks, finite disks,
+/* LILO core: ephemeris interpolation, topocentric geometry, horizon masks, finite disks,
    event root-finding, metrics and Pareto sorting. No DOM. Loaded by the page (window.LWB) and by the Node
    tests (require), so every validated number comes from the code the page runs.
 

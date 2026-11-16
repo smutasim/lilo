@@ -1,6 +1,6 @@
 # Third-party software, data and services
 
-The Lunar Window Browser's own code and text are licensed under the Apache License 2.0 (`LICENSE`, `NOTICE`).
+LILO's own code and text are licensed under the Apache License 2.0 (`LICENSE`, `NOTICE`).
 Everything below comes from someone else, keeps its own licence, and is listed here as the NASA Space Apps terms
 require ("Use of Third-Party Materials"). Nothing here is export-controlled.
 

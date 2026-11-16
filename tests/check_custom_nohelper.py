@@ -9,6 +9,7 @@ AE = str(ROOT / 'node_modules' / 'astronomy-engine' / 'astronomy.browser.min.js'
 ok = True
 with sync_playwright() as p:
     b = p.chromium.launch(); pg = b.new_page(viewport={'width': 1360, 'height': 1000})
+    pg.add_init_script("try { localStorage.setItem('lwb.tour.v1', 'done'); } catch (e) {}")  # skip the first-visit tour prompt
     errs = []
     pg.on('pageerror', lambda e: errs.append(str(e)))
     pg.route('**/astronomy.browser.min.js', lambda r: r.fulfill(path=AE, content_type='application/javascript'))

@@ -42,6 +42,7 @@ try:
         b = p.chromium.launch()
         def page_for(w, h, mobile=False, frag='', url=URL, wait='window.LWB_READY_MS > 0'):
             ctx = b.new_context(viewport={'width': w, 'height': h}, device_scale_factor=1 if not mobile else 2, is_mobile=mobile, has_touch=mobile, accept_downloads=True)
+            ctx.add_init_script("try { localStorage.setItem('lwb.tour.v1', 'done'); } catch (e) {}")  # skip the first-visit tour prompt
             pg = ctx.new_page()
             # a refused helper probe is expected when the helper is not running (the add-site form pings it)
             # 'GPU stall due to ReadPixels': headless Chrome's software WebGL when the harness screenshots the 3D canvas
@@ -336,8 +337,8 @@ try:
         f_area = txt(pg, '#funnel')
         print('funnel, south of 89S:', f_area[:220])
         assert f_area != f_all, 'restricting the area did not change the funnel'
-        pg.fill('#fLat0', ''); pg.dispatch_event('#fLat0', 'change'); pg.wait_for_timeout(600)
-        assert txt(pg, '#funnel') == f_all, 'clearing the area did not restore the funnel'
+        pg.fill('#fLat0', '83'); pg.dispatch_event('#fLat0', 'change'); pg.wait_for_timeout(600)
+        assert txt(pg, '#funnel') == f_all, 'restoring the default area (83 S) did not restore the funnel'
         assert ncand > 0, 'no candidate meets the goals (mean >= 700, dark <= 150 h, Earth >= 40 %, slope <= 10 deg), so the open-candidate flow cannot be tested'
         assert pg.is_disabled('#fOpen'), '#fOpen should be disabled until a candidate is selected'
         first = pg.locator('#fTable tr[data-k] >> nth=0').inner_text().split('\t')[0]

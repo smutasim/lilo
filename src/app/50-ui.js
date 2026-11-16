@@ -357,7 +357,7 @@ $('prevWin').addEventListener('click', function () { jump(-1); });
 function exportData() {
   var s = SITES[S.sel], lim = spanSteps(), wins = windowsIn(s, 0, lim), dialEnd = stepMs(lim - 1), mh = maskHeight(s);
   var d = {
-    tool: 'Lunar Window Browser', generated_utc: new Date().toISOString(), not_flight_grade: true,
+    tool: 'LILO (Lunar Illumination and Landing Optimizer)', generated_utc: new Date().toISOString(), not_flight_grade: true,
     site: { name: s.name, lat_deg: +s.lat.toFixed(5), lon_east_deg: +((s.lon + 360) % 360).toFixed(5), frame: 'Moon mean Earth / polar axis (ME)', source: s.custom ? 'user entry' : s.src, source_url: s.url || null, ground_height_m: s.terr ? s.terr.h_m : null },
     assumptions: {
       period_start_utc: iso(S.startMs), period_end_utc: iso(dialEnd),
@@ -382,7 +382,7 @@ function exportData() {
   return d;
 }
 function toCSV(d) {
-  var L = ['# Lunar Window Browser export. Not flight-grade.', '# site: ' + d.site.name + ' | lat ' + d.site.lat_deg + ' | lon E ' + d.site.lon_east_deg + ' | ' + d.site.frame, '# source: ' + d.site.source];
+  var L = ['# LILO (Lunar Illumination and Landing Optimizer) export. Not flight-grade.', '# site: ' + d.site.name + ' | lat ' + d.site.lat_deg + ' | lon E ' + d.site.lon_east_deg + ' | ' + d.site.frame, '# source: ' + d.site.source];
   Object.keys(d.assumptions).forEach(function (k) { var v = d.assumptions[k]; L.push('# ' + k + ': ' + (Array.isArray(v) ? v.join('; ') : v)); });
   d.windows_meeting_limits.forEach(function (w) { L.push('# window: ' + w.opens_utc + ' to ' + w.closes_utc + (w.still_open_at_end_of_range ? ' (still open at end of range)' : '') + ', ' + w.duration_h + ' h'); });
   d.sun_events.forEach(function (e) { L.push('# sun event: ' + e.utc + ' ' + e.event); });

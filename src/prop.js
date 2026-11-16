@@ -1,4 +1,4 @@
-/* Lunar Window Browser orbit propagator. No DOM. Loaded by the page (window.LWBProp) and by the Node tests (require).
+/* LILO orbit propagator. No DOM. Loaded by the page (window.LWBProp) and by the Node tests (require).
 
    Equations of motion, Moon-centred ICRF (J2000 Earth-equator axes), km, km/s:
      r'' = -GM r/|r|^3                                   central term, GM of the gravity field (below)

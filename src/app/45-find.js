@@ -175,7 +175,7 @@ $('fLimEdit').addEventListener('click', function () {
 $('fLinkMin').addEventListener('change', function () { var v = parseFloat(this.value); S.linkMin = clamp(isFinite(v) ? v : 0, 0, 60); this.value = S.linkMin; $('linkMin').value = S.linkMin; recompute(false); findCompute(); });
 $('fGround').addEventListener('change', function () { S.ground = this.checked; $('ground').checked = S.ground; recompute(true); });
 
-var AREA0 = [85, 90, 0, 360]; // the survey's own extent: the default area
+var AREA0 = [83, 90, 0, 360]; // the survey's own extent: the default area
 function readArea() {
   function num(id) { var v = parseFloat($(id).value); return isFinite(v) ? v : null; }
   var a = { la0: num('fLat0'), la1: num('fLat1'), lo0: num('fLon0'), lo1: num('fLon1') };
@@ -196,7 +196,7 @@ function findApply() {
   var P = SURVEY.pts, n = P.length, lims = activeLims(), area = readArea(), pass = new Uint8Array(n), inA = new Uint8Array(n), k, left = [], inList = [];
   for (k = 0; k < n; k++) if (inArea(area, P[k][0], P[k][1])) { inA[k] = 1; left.push(k); }
   inList = left.slice();
-  var html = '<li><b>Survey points' + (area.active ? ' in your area' : ', 85°S to the pole') + '</b><span>' + left.length.toLocaleString('en-US') + '</span></li>', n0 = Math.max(1, left.length);
+  var html = '<li><b>Survey points' + (area.active ? ' in your area' : ', 83°S to the pole') + '</b><span>' + left.length.toLocaleString('en-US') + '</span></li>', n0 = Math.max(1, left.length);
   lims.forEach(function (q) {
     left = left.filter(function (j) { return inLim(q, j); });
     html += '<li><b>' + esc(limText(q)) + '</b><span>' + left.length.toLocaleString('en-US') + ' left</span><div class="bar2"><i style="width:' + (left.length / n0 * 100).toFixed(1) + '%"></i></div></li>';
@@ -225,7 +225,7 @@ function findNote() {
   var M = FIND.M, m = SURVEY.meta;
   $('fStatus').textContent = '';
   $('fSurveyNote').textContent = 'Period: ' + iso(M.t0).slice(0, 10) + ' to ' + iso(M.t0 + M.days * DAY).slice(0, 10) + ' UTC.';
-  $('fNote').innerHTML = '<b>What the candidates are.</b> ' + SURVEY.pts.length.toLocaleString('en-US') + ' points, one per ' + m.cell_km + ' km cell from 85°S to the pole, each placed on the cell\'s brightest pixel in the PGDA 18.6-year average-visibility map. That map only chooses where the point sits. Every number here is computed for your dates from the point\'s own LOLA horizon mask (' + m.hobs_m + ' m observer, ' + m.nb + ' azimuth bins), sampled every ' + M.stepMin + ' min' + (FIND.fallback ? ', <b>with the fallback ephemeris for part of the period</b>' : '') + '. ' +
+  $('fNote').innerHTML = '<b>What the candidates are.</b> ' + SURVEY.pts.length.toLocaleString('en-US') + ' points, one per ' + m.cell_km + ' km cell of a square grid around the pole (85°S at the edge midpoints, 83°S at the corners), each placed on the cell\'s brightest pixel in the PGDA 18.6-year average-visibility map. That map only chooses where the point sits. Every number here is computed for your dates from the point\'s own LOLA horizon mask (' + m.hobs_m + ' m observer, ' + m.nb + ' azimuth bins), sampled every ' + M.stepMin + ' min' + (FIND.fallback ? ', <b>with the fallback ephemeris for part of the period</b>' : '') + '. ' +
     'Irradiance is on a Sun-facing surface: 1361 W/m² at 1 au, scaled by the Sun\'s distance and the visible fraction of its disk. Slope is from the 5 m model over a 10 m baseline where a 5 m tile exists, otherwise from the 20 m mosaic over 40 m. ' + esc(linkRuleText()) + ' ' +
     '<b>The two scores.</b> Solar score = 100 × the average of three fractions: mean irradiance ÷ mean full-disk irradiance, lowest 24 h mean ÷ mean full-disk irradiance, and 1 − longest darkness ÷ stay length. Earth score = 100 × the average of the share of time with a link and 1 − longest outage ÷ stay length. Equal weights, no other input: they are a summary for a first cut, not a judgement of a site; the numbers under them are what a mission should check. ' +
     '<b>What this cannot tell you.</b> A 5 km cell holds better and worse ground than its one point, so an empty map means no <i>survey point</i> meets the ranges, not that no ground does. Elevation-model error is not quantified for survey points.';
